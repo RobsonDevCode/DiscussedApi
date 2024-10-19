@@ -118,6 +118,7 @@ C:\Repos\PFMSApi\PFMSApi\obj\Debug\net8.0\PFMSApi.AssemblyInfo.cs
 C:\Repos\PFMSApi\PFMSApi\obj\Debug\net8.0\PFMSApi.csproj.CoreCompileInputs.cache
 C:\Repos\PFMSApi\PFMSApi\obj\Debug\net8.0\PFMSApi.MvcApplicationPartsAssemblyInfo.cs
 C:\Repos\PFMSApi\PFMSApi\obj\Debug\net8.0\PFMSApi.MvcApplicationPartsAssemblyInfo.cache
+C:\Repos\PFMSApi\PFMSApi\obj\Debug\net8.0\PFMSApi.sourcelink.json
 C:\Repos\PFMSApi\PFMSApi\obj\Debug\net8.0\staticwebassets.build.json
 C:\Repos\PFMSApi\PFMSApi\obj\Debug\net8.0\staticwebassets.development.json
 C:\Repos\PFMSApi\PFMSApi\obj\Debug\net8.0\staticwebassets\msbuild.PFMSApi.Microsoft.AspNetCore.StaticWebAssets.props

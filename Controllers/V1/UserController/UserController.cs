@@ -128,6 +128,16 @@ namespace PFMSApi.Controllers.V1.UserController
             }
         }
 
+        [Authorize]
+        [HttpGet("LogOut")]
+
+        public async Task<IActionResult> Logout()
+        {
+            var user = new User();
+
+            return Ok(user);
+        }
+
         [HttpPost("RecoverAccount")]
         public async Task<IActionResult> RecoverAccount([FromBody] RecoverUserDto recoverUser)
         {

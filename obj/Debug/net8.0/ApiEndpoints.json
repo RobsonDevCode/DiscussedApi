@@ -8,8 +8,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "email",
-        "Type": "System.String",
+        "Name": "confirmation",
+        "Type": "PFMSDdto.Email.EmailDto",
         "IsRequired": true
       }
     ],
@@ -25,7 +25,7 @@
     "Parameters": [
       {
         "Name": "emailRecovery",
-        "Type": "PFMSDdto.Email.RecoveryEmailDto",
+        "Type": "PFMSDdto.Email.EmailDto",
         "IsRequired": true
       }
     ],
@@ -61,6 +61,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "Method": "Logout",
+    "RelativePath": "V1/User/LogOut",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
