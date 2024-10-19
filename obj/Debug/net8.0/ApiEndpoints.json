@@ -1,0 +1,98 @@
+[
+  {
+    "ContainingType": "PFMSApi.Controllers.V1.Email.EmailController",
+    "Method": "SendConfirmationEmail",
+    "RelativePath": "V1/Email/ConfirmEmail",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PFMSApi.Controllers.V1.Email.EmailController",
+    "Method": "SendRecoveryEmail",
+    "RelativePath": "V1/Email/SendRecoveryEmail",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "emailRecovery",
+        "Type": "PFMSDdto.Email.RecoveryEmailDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "Method": "EmailConfirmation",
+    "RelativePath": "V1/User/EmailConfirmation",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "Method": "Login",
+    "RelativePath": "V1/User/Login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "loginDto",
+        "Type": "PFMSDdto.User.LoginDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "Method": "RecoverAccount",
+    "RelativePath": "V1/User/RecoverAccount",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recoverUser",
+        "Type": "PFMSDdto.User.RecoverUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "Method": "Register",
+    "RelativePath": "V1/User/Register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "register",
+        "Type": "PFMSDdto.User.RegisterDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
