@@ -1,25 +1,25 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using PFMSApi.Models;
+using DiscussedApi.Models;
+using DiscussedApi.Configuration;
+using Microsoft.Extensions.Options;
 
-namespace PFMSApi.Data
+namespace DiscussedApi.Data.Identity
 {
-    public class ApplicationDBContext : IdentityDbContext<User>
+    public class ApplicationIdentityDBContext : IdentityDbContext<User>
     {
-        public ApplicationDBContext(DbContextOptions dbContextOptions) : base(dbContextOptions) 
+        public ApplicationIdentityDBContext(DbContextOptions<ApplicationIdentityDBContext> dbContextOptions) : base(dbContextOptions)
         {
 
         }
-
-        public DbSet<Account> Accounts { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
             List<IdentityRole> roles = new List<IdentityRole>
-            { 
+            {
                 new IdentityRole
                 {
                     Name = "Admin",
@@ -30,11 +30,11 @@ namespace PFMSApi.Data
                     Name = "User",
                     NormalizedName = "USER",
                 }
-                
+
             };
 
             builder.Entity<IdentityRole>().HasData(roles);
         }
-       
+
     }
 }

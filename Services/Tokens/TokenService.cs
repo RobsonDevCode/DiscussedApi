@@ -1,10 +1,10 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using PFMSApi.Configuration;
-using PFMSApi.Models;
+using DiscussedApi.Configuration;
+using DiscussedApi.Models;
 using System.Security.Claims;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
-namespace PFMSApi.Services.Tokens
+namespace DiscussedApi.Services.Tokens
 {
     public class TokenService : ITokenService
     {

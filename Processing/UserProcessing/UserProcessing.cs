@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using PFMSApi.Models;
-using PFMSApi.Processing.UserPocessing;
-using PFMSDdto.User;
+using DiscussedApi.Models;
+using DiscussedApi.Processing.UserPocessing;
+using DiscussedDto.User;
 
-namespace PFMSApi.Processing.UserProcessing
+namespace DiscussedApi.Processing.UserProcessing
 {
     public class UserProcessing : IUserProcessing
     {
         private readonly UserManager<User> _userManager;
-
+        private readonly NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
         public UserProcessing(UserManager<User> userManager)
         {
              _userManager = userManager;
@@ -21,16 +21,24 @@ namespace PFMSApi.Processing.UserProcessing
 
             user.PasswordHash = recoverUser.NewPassword;
 
-            var removePassword = await _userManager.RemovePasswordAsync(user);
-
-            if (!removePassword.Succeeded)
+            try
             {
-                return removePassword;
+                var removePassword = await _userManager.RemovePasswordAsync(user);
+
+                if (!removePassword.Succeeded)
+                {
+                    return removePassword;
+                }
+
+                var result = await _userManager.AddPasswordAsync(user, recoverUser.NewPassword);
+
+                return result;
             }
-
-            var result = await _userManager.AddPasswordAsync(user, recoverUser.NewPassword);
-
-            return result;
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                return IdentityResult.Failed(new IdentityError {Code = "Change Password Error", Description = ex.Message});
+            }
         }
     }
 }

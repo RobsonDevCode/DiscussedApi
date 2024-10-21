@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PFMSApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bafe7bad58c265e78d6548803abc5846a504e135")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9f8820f97157ee453fd2ad340ba543b72122f335")]
 [assembly: System.Reflection.AssemblyProductAttribute("PFMSApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PFMSApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

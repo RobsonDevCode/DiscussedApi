@@ -1,8 +1,8 @@
 {
   "Version": 1,
-  "Hash": "mKJbIUPTqXuoVwph25Q+a7EPGtTr5rvyMhm8P/89drc=",
-  "Source": "PFMSApi",
-  "BasePath": "_content/PFMSApi",
+  "Hash": "vUMH52SYcW9vb52CTItQolJmySRn1qLwEjxrPvPwINQ=",
+  "Source": "DiscussedApi",
+  "BasePath": "_content/DiscussedApi",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],

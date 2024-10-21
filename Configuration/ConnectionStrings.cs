@@ -1,5 +1,5 @@
 ﻿
-namespace PFMSApi.Configuration
+namespace DiscussedApi.Configuration
 {
     internal class ConnectionStrings
     {

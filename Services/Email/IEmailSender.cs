@@ -1,7 +1,7 @@
-﻿using PFMSApi.Models;
-using static PFMSApi.Models.EmailTypeToGenertate;
+﻿using DiscussedApi.Models;
+using static DiscussedApi.Models.EmailTypeToGenertate;
 
-namespace PFMSApi.Services.Email
+namespace DiscussedApi.Services.Email
 {
     public interface IEmailSender
     {

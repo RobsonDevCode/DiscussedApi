@@ -1,0 +1,390 @@
+2024-10-21 18:03:53.7941 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:03:53.7995 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:03:53.8180 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:03:53.8180 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:04:21.2229 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:04:21.2229 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:04:21.2229 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:04:21.2229 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:05:08.3382 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:05:08.3523 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:05:08.4019 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:05:08.4019 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:06:27.7435 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:06:27.7546 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:06:27.7765 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:06:27.7765 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:06:49.1128 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:06:49.1128 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:06:49.1405 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:06:49.1405 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:12:08.6544 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:12:08.6686 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:12:08.6969 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:12:08.6969 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:14:45.4571 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:14:45.4861 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:14:45.5345 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:14:45.5345 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:16:13.5899 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:16:13.5975 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:16:13.6275 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:16:13.6275 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:16:25.6467 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:16:25.6467 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:16:25.6807 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:16:25.6807 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\Nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:22:19.0370 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:22:19.0370 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:22:19.0641 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:22:19.0641 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 18:23:41.4977 Error Error has been raised. Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+2024-10-21 18:23:41.5049 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config Exception: NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 18:23:41.5317 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 18:23:41.5329 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config
+ ---> NLog.NLogConfigurationException: Unrecognized element 'target' from section 'NLog'
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 20:25:13.5854 Error Error has been raised. Exception: NLog.NLogConfigurationException: Failed to create Target with unknown type-alias: 'Database' - Extension NLog.Database not included?
+   at NLog.Config.FactoryExtensions.CreateInstance[TBaseType](IFactory`1 factory, String typeAlias)
+   at NLog.Config.LoggingConfigurationParser.FactoryCreateInstance[T](String typeName, IFactory`1 factory)
+2024-10-21 20:25:13.6424 Error Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config Exception: NLog.NLogConfigurationException: Failed to create Target with unknown type-alias: 'Database' - Extension NLog.Database not included?
+   at NLog.Config.FactoryExtensions.CreateInstance[TBaseType](IFactory`1 factory, String typeAlias)
+   at NLog.Config.LoggingConfigurationParser.FactoryCreateInstance[T](String typeName, IFactory`1 factory)
+   at NLog.Config.LoggingConfigurationParser.CreateTargetType(String targetTypeName)
+   at NLog.Config.LoggingConfigurationParser.AddNewTargetFromConfig(String targetTypeName, ValidatedConfigurationElement targetElement, Boolean asyncWrap, Dictionary`2 typeNameToDefaultTargetParameters, ValidatedConfigurationElement defaultWrapperElement)
+   at NLog.Config.LoggingConfigurationParser.ParseTargetsElement(ValidatedConfigurationElement targetsElement)
+   at NLog.Config.LoggingConfigurationParser.ParseNLogSection(ILoggingConfigurationElement configSection)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogSection(ILoggingConfigurationElement configSection)
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+2024-10-21 20:25:13.6424 Error Error has been raised. Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config
+ ---> NLog.NLogConfigurationException: Failed to create Target with unknown type-alias: 'Database' - Extension NLog.Database not included?
+   at NLog.Config.FactoryExtensions.CreateInstance[TBaseType](IFactory`1 factory, String typeAlias)
+   at NLog.Config.LoggingConfigurationParser.FactoryCreateInstance[T](String typeName, IFactory`1 factory)
+   at NLog.Config.LoggingConfigurationParser.CreateTargetType(String targetTypeName)
+   at NLog.Config.LoggingConfigurationParser.AddNewTargetFromConfig(String targetTypeName, ValidatedConfigurationElement targetElement, Boolean asyncWrap, Dictionary`2 typeNameToDefaultTargetParameters, ValidatedConfigurationElement defaultWrapperElement)
+   at NLog.Config.LoggingConfigurationParser.ParseTargetsElement(ValidatedConfigurationElement targetsElement)
+   at NLog.Config.LoggingConfigurationParser.ParseNLogSection(ILoggingConfigurationElement configSection)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogSection(ILoggingConfigurationElement configSection)
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+2024-10-21 20:25:13.6424 Error Failed loading from config file location: C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config Exception: NLog.NLogConfigurationException: Exception when loading configuration C:\Repos\DiscussedApi\DiscussedApi\bin\Debug\net8.0\nlog.config
+ ---> NLog.NLogConfigurationException: Failed to create Target with unknown type-alias: 'Database' - Extension NLog.Database not included?
+   at NLog.Config.FactoryExtensions.CreateInstance[TBaseType](IFactory`1 factory, String typeAlias)
+   at NLog.Config.LoggingConfigurationParser.FactoryCreateInstance[T](String typeName, IFactory`1 factory)
+   at NLog.Config.LoggingConfigurationParser.CreateTargetType(String targetTypeName)
+   at NLog.Config.LoggingConfigurationParser.AddNewTargetFromConfig(String targetTypeName, ValidatedConfigurationElement targetElement, Boolean asyncWrap, Dictionary`2 typeNameToDefaultTargetParameters, ValidatedConfigurationElement defaultWrapperElement)
+   at NLog.Config.LoggingConfigurationParser.ParseTargetsElement(ValidatedConfigurationElement targetsElement)
+   at NLog.Config.LoggingConfigurationParser.ParseNLogSection(ILoggingConfigurationElement configSection)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogSection(ILoggingConfigurationElement configSection)
+   at NLog.Config.LoggingConfigurationParser.LoadConfig(ILoggingConfigurationElement nlogConfig, String basePath)
+   at NLog.Config.XmlLoggingConfiguration.ParseNLogElement(ILoggingConfigurationElement nlogElement, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.ParseTopLevel(XmlLoggingConfigurationElement content, String filePath, Boolean autoReloadDefault)
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   --- End of inner exception stack trace ---
+   at NLog.Config.XmlLoggingConfiguration.Initialize(XmlReader reader, String fileName, Boolean ignoreErrors)
+   at NLog.Config.XmlLoggingConfiguration..ctor(XmlReader reader, String fileName, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfiguration(XmlReader xmlReader, String configFile, LogFactory logFactory)
+   at NLog.Config.LoggingConfigurationFileLoader.LoadXmlLoggingConfigurationFile(LogFactory logFactory, String configFile)
+   at NLog.Config.LoggingConfigurationFileLoader.TryLoadLoggingConfiguration(LogFactory logFactory, String configFile, LoggingConfiguration& config)
+2024-10-21 20:28:01.9082 Error DatabaseTarget(Name=database): Failed to create ConnectionType from DBProvider=MySql.Data.MySqlClient.MySqlConnection, MySql.Data Exception: System.IO.FileNotFoundException: Could not load file or assembly 'MySql.Data, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.
+File name: 'MySql.Data, Culture=neutral, PublicKeyToken=null'
+   at System.Reflection.RuntimeAssembly.InternalLoad(AssemblyName assemblyName, StackCrawlMark& stackMark, AssemblyLoadContext assemblyLoadContext, RuntimeAssembly requestingAssembly, Boolean throwOnFileNotFound)
+   at System.Reflection.TypeNameParser.ResolveAssembly(String assemblyName)
+   at System.Reflection.TypeNameParser.GetType(String typeName, ReadOnlySpan`1 nestedTypeNames, String assemblyNameIfAny)
+   at System.Reflection.TypeNameParser.Parse()
+   at System.Reflection.TypeNameParser.GetType(String typeName, Func`2 assemblyResolver, Func`4 typeResolver, Assembly requestingAssembly, Boolean throwOnError, Boolean ignoreCase, Boolean extensibleParser)
+   at System.Type.GetType(String typeName, Boolean throwOnError, Boolean ignoreCase)
+   at NLog.Targets.DatabaseTarget.SetConnectionType()
+   at NLog.Targets.DatabaseTarget.InitializeTarget()
+2024-10-21 20:30:01.2319 Error DatabaseTarget(Name=database): Error when writing to database. Exception: MySqlConnector.MySqlException (0x80004005): Unknown column 'Application' in 'field list'
+   at MySqlConnector.Core.ServerSession.ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 894
+   at MySqlConnector.Core.ResultSet.ReadResultSetHeaderAsync(IOBehavior ioBehavior) in /_/src/MySqlConnector/Core/ResultSet.cs:line 37
+   at MySqlConnector.MySqlDataReader.ActivateResultSet(CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 130
+   at MySqlConnector.MySqlDataReader.InitAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary`2 cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 483
+   at MySqlConnector.Core.CommandExecutor.ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/CommandExecutor.cs:line 56
+   at MySqlConnector.MySqlCommand.ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlCommand.cs:line 309
+   at MySqlConnector.MySqlCommand.ExecuteNonQuery() in /_/src/MySqlConnector/MySqlCommand.cs:line 108
+   at NLog.Targets.DatabaseTarget.ExecuteDbCommandWithParameters(LogEventInfo logEvent, IDbConnection dbConnection, IDbTransaction dbTransaction)
+   at NLog.Targets.DatabaseTarget.WriteLogEventSuppressTransactionScope(LogEventInfo logEvent, String connectionString)
+2024-10-21 20:31:02.6280 Error DatabaseTarget(Name=database): Error when writing to database. Exception: MySqlConnector.MySqlException (0x80004005): Unknown column 'Application' in 'field list'
+   at MySqlConnector.Core.ServerSession.ReceiveReplyAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/ServerSession.cs:line 894
+   at MySqlConnector.Core.ResultSet.ReadResultSetHeaderAsync(IOBehavior ioBehavior) in /_/src/MySqlConnector/Core/ResultSet.cs:line 37
+   at MySqlConnector.MySqlDataReader.ActivateResultSet(CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 130
+   at MySqlConnector.MySqlDataReader.InitAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, IDictionary`2 cachedProcedures, IMySqlCommand command, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlDataReader.cs:line 483
+   at MySqlConnector.Core.CommandExecutor.ExecuteReaderAsync(CommandListPosition commandListPosition, ICommandPayloadCreator payloadCreator, CommandBehavior behavior, Activity activity, IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/Core/CommandExecutor.cs:line 56
+   at MySqlConnector.MySqlCommand.ExecuteNonQueryAsync(IOBehavior ioBehavior, CancellationToken cancellationToken) in /_/src/MySqlConnector/MySqlCommand.cs:line 309
+   at MySqlConnector.MySqlCommand.ExecuteNonQuery() in /_/src/MySqlConnector/MySqlCommand.cs:line 108
+   at NLog.Targets.DatabaseTarget.ExecuteDbCommandWithParameters(LogEventInfo logEvent, IDbConnection dbConnection, IDbTransaction dbTransaction)
+   at NLog.Targets.DatabaseTarget.WriteLogEventSuppressTransactionScope(LogEventInfo logEvent, String connectionString)
+2024-10-21 20:45:12.2296 Warn Unused target detected. Add a rule for this target to the configuration. TargetName: database

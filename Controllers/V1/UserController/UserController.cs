@@ -1,22 +1,18 @@
-﻿using AesEncryptor;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using PFMSApi.Configuration;
-using PFMSApi.Models;
-using PFMSApi.Processing.UserPocessing;
-using PFMSApi.Services.Email;
-using PFMSApi.Services.Tokens;
-using PFMSDdto.Email;
-using PFMSDdto.User;
-using RestSharp;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using DiscussedApi.Configuration;
+using DiscussedApi.Models;
+using DiscussedApi.Processing.UserPocessing;
+using DiscussedApi.Services.Email;
+using DiscussedApi.Services.Tokens;
+using DiscussedDto.User;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using NLog;
 
-namespace PFMSApi.Controllers.V1.UserController
+namespace DiscussedApi.Controllers.V1.UserController
 {
     [ApiController]
     [Route("V1/[controller]")]
@@ -26,21 +22,21 @@ namespace PFMSApi.Controllers.V1.UserController
         private readonly ITokenService _tokenService;
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailSender _emailSender;
-        private readonly IUserProcessing _userProcessing;    
+        private readonly IUserProcessing _userProcessing;
+        private NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         public UserController(UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager, IEmailSender emailSender, IUserProcessing userProcessing)
         {
-           _userManager = userManager;
-           _tokenService = tokenService;
-           _signInManager = signInManager;
-           _emailSender = emailSender;
-           _userProcessing = userProcessing; 
+            _userManager = userManager;
+            _tokenService = tokenService;
+            _signInManager = signInManager;
+            _emailSender = emailSender;
+            _userProcessing = userProcessing;
         }
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto register)
         {
-          try
-          {
+           
                 if (register == null) return BadRequest("Request body sent was null");
 
                 var user = new User
@@ -49,12 +45,14 @@ namespace PFMSApi.Controllers.V1.UserController
                     Email = register.EmailAddress
                 };
 
-                if (string.IsNullOrEmpty(register.Password) || string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email)) 
+                if (string.IsNullOrEmpty(register.Password) || string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
                     return BadRequest("Invalid Password Or Username/Email");
 
+            try 
+            { 
                 var createcUser = await _userManager.CreateAsync(user, register.Password);
-
-                if(createcUser.Succeeded)
+                var test = await _userManager.GetUsersInRoleAsync("User");
+                if (createcUser.Succeeded)
                 {
                     var roleResult = await _userManager.AddToRoleAsync(user, "User");
 
@@ -71,6 +69,7 @@ namespace PFMSApi.Controllers.V1.UserController
                     }
                     else
                     {
+                        _logger.Error(roleResult.Errors);
                         return StatusCode(500, roleResult.Errors);
                     }
                 }
@@ -78,13 +77,13 @@ namespace PFMSApi.Controllers.V1.UserController
                 {
                     return BadRequest(createcUser.Errors);
                 }
-          }
+            }
 
-          catch(Exception ex)
-          {
-            Console.WriteLine(ex);
-            return StatusCode(500, ex);
-          }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                return StatusCode(500, ex);
+            }
         }
 
         [HttpPost("Login")]
@@ -121,16 +120,15 @@ namespace PFMSApi.Controllers.V1.UserController
                 });
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                _logger.Error(ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
 
         [Authorize]
         [HttpGet("LogOut")]
-
         public async Task<IActionResult> Logout()
         {
             var user = new User();
@@ -143,6 +141,7 @@ namespace PFMSApi.Controllers.V1.UserController
         {
             try
             {
+
                 if (string.IsNullOrWhiteSpace(recoverUser.NewPassword) || string.IsNullOrWhiteSpace(recoverUser.Email))
                     return BadRequest("Attempted to recover account failed Email or Password is incorrect");
 
@@ -164,7 +163,7 @@ namespace PFMSApi.Controllers.V1.UserController
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                _logger.Error(ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
@@ -173,23 +172,34 @@ namespace PFMSApi.Controllers.V1.UserController
         [HttpPost("EmailConfirmation")]
         public async Task<IActionResult> EmailConfirmation([FromBody, EmailAddress] string email)
         {
-            if (string.IsNullOrWhiteSpace(email)) return BadRequest("Email given was null");
-
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email.ToLower());
-
-            if (user == null)
+            try
             {
-                return NoContent();
+                if (string.IsNullOrWhiteSpace(email)) return BadRequest("Email given was null");
+
+                var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email.ToLower());
+
+                if (user == null)
+                {
+                    _logger.Warn($"Failed to send email confirmation for {email}");
+                    return NoContent();
+                }
+
+                user.EmailConfirmed = true;
+                var result = await _userManager.UpdateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    _logger.Error(result.Errors);
+                    return StatusCode(500, result.Errors);
+                }
+
+                return Ok();
             }
-
-            user.EmailConfirmed = true;
-            var result = await _userManager.UpdateAsync(user);
-
-            if(!result.Succeeded) return StatusCode(500,result.Errors);
-
-            return Ok();
-
-
+            catch(Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
 
         

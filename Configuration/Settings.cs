@@ -1,6 +1,6 @@
-﻿using PFMSApi.Authenctication;
+﻿using DiscussedApi.Authenctication;
 
-namespace PFMSApi.Configuration
+namespace DiscussedApi.Configuration
 {
     internal static class Settings
     {

@@ -1,6 +1,16 @@
 [
   {
-    "ContainingType": "PFMSApi.Controllers.V1.Email.EmailController",
+    "ContainingType": "DiscussedApi.Controllers.V1.TimeManagement.CommentController",
+    "Method": "GetComments",
+    "RelativePath": "V1/Comment/GetComments",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Email.EmailController",
     "Method": "SendConfirmationEmail",
     "RelativePath": "V1/Email/ConfirmEmail",
     "HttpMethod": "POST",
@@ -9,14 +19,14 @@
     "Parameters": [
       {
         "Name": "confirmation",
-        "Type": "PFMSDdto.Email.EmailDto",
+        "Type": "DiscussedDto.Email.EmailDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PFMSApi.Controllers.V1.Email.EmailController",
+    "ContainingType": "DiscussedApi.Controllers.V1.Email.EmailController",
     "Method": "SendRecoveryEmail",
     "RelativePath": "V1/Email/SendRecoveryEmail",
     "HttpMethod": "POST",
@@ -25,14 +35,14 @@
     "Parameters": [
       {
         "Name": "emailRecovery",
-        "Type": "PFMSDdto.Email.EmailDto",
+        "Type": "DiscussedDto.Email.EmailDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "EmailConfirmation",
     "RelativePath": "V1/User/EmailConfirmation",
     "HttpMethod": "POST",
@@ -48,7 +58,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "Login",
     "RelativePath": "V1/User/Login",
     "HttpMethod": "POST",
@@ -57,14 +67,14 @@
     "Parameters": [
       {
         "Name": "loginDto",
-        "Type": "PFMSDdto.User.LoginDto",
+        "Type": "DiscussedDto.User.LoginDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "Logout",
     "RelativePath": "V1/User/LogOut",
     "HttpMethod": "GET",
@@ -74,7 +84,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "RecoverAccount",
     "RelativePath": "V1/User/RecoverAccount",
     "HttpMethod": "POST",
@@ -83,14 +93,14 @@
     "Parameters": [
       {
         "Name": "recoverUser",
-        "Type": "PFMSDdto.User.RecoverUserDto",
+        "Type": "DiscussedDto.User.RecoverUserDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PFMSApi.Controllers.V1.UserController.UserController",
+    "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "Register",
     "RelativePath": "V1/User/Register",
     "HttpMethod": "POST",
@@ -99,7 +109,7 @@
     "Parameters": [
       {
         "Name": "register",
-        "Type": "PFMSDdto.User.RegisterDto",
+        "Type": "DiscussedDto.User.RegisterDto",
         "IsRequired": true
       }
     ],

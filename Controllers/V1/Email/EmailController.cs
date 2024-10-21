@@ -1,18 +1,20 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using PFMSApi.Models;
-using PFMSApi.Services.Email;
-using PFMSDdto.Email;
-using static PFMSApi.Models.EmailTypeToGenertate;
+using DiscussedApi.Models;
+using DiscussedApi.Services.Email;
+using DiscussedDto.Email;
+using static DiscussedApi.Models.EmailTypeToGenertate;
+using NLog;
 
-namespace PFMSApi.Controllers.V1.Email
+namespace DiscussedApi.Controllers.V1.Email
 {
     [ApiController]
     [Route("V1/[controller]")]
     public class EmailController : ControllerBase
     {
         private readonly IEmailSender _emailSender;
+        private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         public EmailController(IEmailSender emailSender)
         {
             _emailSender = emailSender;
@@ -21,6 +23,8 @@ namespace PFMSApi.Controllers.V1.Email
         [HttpPost("SendRecoveryEmail")]
         public async Task<IActionResult> SendRecoveryEmail([FromBody] EmailDto emailRecovery)
         {
+            if (string.IsNullOrWhiteSpace(emailRecovery.Email)) return BadRequest("Email sent is null");
+
             try
             {
                 string body = await _emailSender.GenerateHtmlBodyAsync(EmailType.Recovery);
@@ -44,13 +48,21 @@ namespace PFMSApi.Controllers.V1.Email
         {
             if (string.IsNullOrWhiteSpace(confirmation.Email)) return BadRequest("Email sent is null");
 
-            string body = await _emailSender.GenerateHtmlBodyAsync(EmailType.Confirmation);
+            try
+            {
+                string body = await _emailSender.GenerateHtmlBodyAsync(EmailType.Confirmation);
 
-            if (string.IsNullOrWhiteSpace(body)) return StatusCode(500, "Unable to send Confirmation Email");
+                if (string.IsNullOrWhiteSpace(body)) return StatusCode(500, "Unable to send Confirmation Email");
 
-            await _emailSender.SendEmailAsync(confirmation.Email, confirmation.Subject, body);
+                await _emailSender.SendEmailAsync(confirmation.Email, confirmation.Subject, body);
 
-            return Ok();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }

@@ -3,26 +3,44 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using PFMSApi.Configuration;
-using PFMSApi.Data;
-using PFMSApi.Models;
-using PFMSApi.Processing.UserPocessing;
-using PFMSApi.Processing.UserProcessing;
-using PFMSApi.Services.Email;
-using PFMSApi.Services.Tokens;
+using DiscussedApi.Configuration;
+using DiscussedApi.Models;
+using DiscussedApi.Processing.UserPocessing;
+using DiscussedApi.Processing.UserProcessing;
+using DiscussedApi.Services.Email;
+using DiscussedApi.Services.Tokens;
 using System.Text;
+using DiscussedApi.Data.Identity;
+using DiscussedApi.Data.UserComments;
+using NLog;
+using NLog.Extensions.Logging;
+using NLog.Web;
+using DiscussedApi.Processing.Comments;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
+//Nlog Set up
+var logger = LogManager.Setup().LoadConfigurationFromFile("nlog.config");
+builder.Logging.AddNLog();
+
 Settings.Initialize(builder.Configuration);
 
-builder.Services.AddDbContext<ApplicationDBContext>(options =>
+
+
+//Entity Framework
+builder.Services.AddDbContext<ApplicationIdentityDBContext>(options =>
 {
     options.UseMySql(Settings.ConnectionString.UserInfo, ServerVersion.AutoDetect(Settings.ConnectionString.UserInfo));
 });
+
+builder.Services.AddDbContext<CommentsDBContext>(options =>
+{
+    options.UseMySql(Settings.ConnectionString.UserInfo, ServerVersion.AutoDetect(Settings.ConnectionString.UserInfo));
+});
+
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -30,7 +48,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 12;
-}).AddEntityFrameworkStores<ApplicationDBContext>();
+}).AddEntityFrameworkStores<ApplicationIdentityDBContext>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -96,6 +114,7 @@ builder.Services.AddSwaggerGen(g =>
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IUserProcessing, UserProcessing>();
+builder.Services.AddTransient<ICommentProcessing, CommentProcessing>();
 
 var app = builder.Build();
 

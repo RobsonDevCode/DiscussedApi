@@ -1,4 +1,4 @@
-﻿namespace PFMSApi.Models
+﻿namespace DiscussedApi.Models
 {
     public class EmailTypeToGenertate
     {

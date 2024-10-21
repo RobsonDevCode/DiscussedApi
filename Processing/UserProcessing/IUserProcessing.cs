@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using PFMSApi.Models;
-using PFMSDdto.User;
+using DiscussedApi.Models;
+using DiscussedDto.User;
 
-namespace PFMSApi.Processing.UserPocessing
+namespace DiscussedApi.Processing.UserPocessing
 {
     public interface IUserProcessing
     {

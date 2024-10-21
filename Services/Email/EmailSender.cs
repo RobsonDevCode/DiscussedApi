@@ -4,27 +4,26 @@ using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
 using Org.BouncyCastle.Asn1.Tsp;
-using PFMSApi.Configuration;
-using PFMSApi.Models;
-using static PFMSApi.Models.EmailTypeToGenertate;
+using DiscussedApi.Configuration;
+using DiscussedApi.Models;
+using static DiscussedApi.Models.EmailTypeToGenertate;
 
-namespace PFMSApi.Services.Email
+namespace DiscussedApi.Services.Email
 {
     public class EmailSender : IEmailSender
     {
+        private readonly NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
         public async Task SendEmailAsync(string email, string subject, string body)
         {
             var emailToSend = new MimeMessage();
 
-
-            emailToSend.From.Add(MailboxAddress.Parse(Settings.EmailSettings.Mailer));
-            emailToSend.To.Add(MailboxAddress.Parse(email));
-            emailToSend.Subject = subject;
-            emailToSend.Body = new TextPart(TextFormat.Html) { Text = body };
-
-
             try
             {
+                emailToSend.From.Add(MailboxAddress.Parse(Settings.EmailSettings.Mailer));
+                emailToSend.To.Add(MailboxAddress.Parse(email));
+                emailToSend.Subject = subject;
+                emailToSend.Body = new TextPart(TextFormat.Html) { Text = body };
+
                 using (var smtp = new SmtpClient())
                 {
                     smtp.Connect("smtp.mailersend.net", 587, SecureSocketOptions.StartTls);
@@ -33,10 +32,10 @@ namespace PFMSApi.Services.Email
                 }
 
             }
-
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.Error(ex, ex.Message);
+                await Task.FromException(ex);
             }
         }
 
@@ -52,7 +51,7 @@ namespace PFMSApi.Services.Email
                     return await File.ReadAllTextAsync(Settings.EmailSettings.ConfirmationBodyFilePath);
 
                 default:
-                    throw new NotImplementedException();
+                    throw new NotImplementedException("Email Type given is invalid or isn't implimented on the version being used");
             }
 
         }

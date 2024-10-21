@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using PFMSApi.Data;
+using DiscussedApi.Data.Identity;
 
 #nullable disable
 
-namespace PFMSApi.Migrations
+namespace DiscussedApi.Migrations
 {
-    [DbContext(typeof(ApplicationDBContext))]
+    [DbContext(typeof(ApplicationIdentityDBContext))]
     [Migration("20241017115024_Identity")]
     partial class Identity
     {

@@ -1,4 +1,4 @@
-﻿namespace PFMSApi.Authenctication
+﻿namespace DiscussedApi.Authenctication
 {
     internal class JwtSettings
     {

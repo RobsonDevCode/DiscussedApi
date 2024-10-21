@@ -1,6 +1,6 @@
-﻿using PFMSApi.Models;
+﻿using DiscussedApi.Models;
 
-namespace PFMSApi.Services.Tokens
+namespace DiscussedApi.Services.Tokens
 {
     public interface ITokenService
     {
