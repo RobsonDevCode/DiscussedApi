@@ -16,6 +16,7 @@ using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using DiscussedApi.Processing.Comments;
+using DiscussedApi.Reopisitory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -115,6 +116,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IUserProcessing, UserProcessing>();
 builder.Services.AddTransient<ICommentProcessing, CommentProcessing>();
+builder.Services.AddTransient<ICommentDataAccess, CommentDataAccess>();
 
 var app = builder.Build();
 
