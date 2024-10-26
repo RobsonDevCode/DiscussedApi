@@ -17,6 +17,11 @@ using NLog.Extensions.Logging;
 using NLog.Web;
 using DiscussedApi.Processing.Comments;
 using DiscussedApi.Reopisitory;
+using FluentValidation;
+using Discusseddto.CommentDtos;
+using DiscussedApi.Validations;
+using FluentValidation.AspNetCore;
+using DiscussedApi.Common.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,6 +122,8 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IUserProcessing, UserProcessing>();
 builder.Services.AddTransient<ICommentProcessing, CommentProcessing>();
 builder.Services.AddTransient<ICommentDataAccess, CommentDataAccess>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 
 var app = builder.Build();
 

@@ -60,7 +60,7 @@ namespace DiscussedApi.Processing.Comments
                 {
                     Id = newComment.Id,
                     UserId = newComment.UserId,
-                    Context = newComment.Context,
+                    Context = newComment.Content,
                     ReplyCount = 0,
                     Likes = 0,
                     DtCreated = DateTime.UtcNow,

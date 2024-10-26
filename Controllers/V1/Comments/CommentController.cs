@@ -1,16 +1,20 @@
-﻿using DiscussedApi.Models;
+﻿using DiscussedApi.Common.Validations;
+using DiscussedApi.Models;
 using DiscussedApi.Models.Comments;
 using DiscussedApi.Processing.Comments;
 using Discusseddto.CommentDtos;
 using FluentEmail.Core;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NLog;
 
 namespace DiscussedApi.Controllers.V1.Comments
 {
-    [ApiController]
     [Route("V1/[controller]")]
+    [ApiController]
     public class CommentController : ControllerBase
     {
         private NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
@@ -20,13 +24,16 @@ namespace DiscussedApi.Controllers.V1.Comments
              _commentProcessing = commentProcessing;
         }
 
-        [Authorize]
         [HttpPost("PostComment")]
-        public async Task<IActionResult> PostCommentAsync([FromBody] NewCommentDto postComment)
+        public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment,
+            [FromServices] IValidator<NewCommentDto> validator)
         {
-            if (string.IsNullOrWhiteSpace(postComment.UserId)) return BadRequest("Login to create a comment");
+            //validate request
+            var validate = await Validator<NewCommentDto>.ValidationAsync(postComment, validator);
 
-            if (string.IsNullOrWhiteSpace(postComment.Context)) return BadRequest("Cannot post an empty Comment!");
+            if(validate.FaliedValidation != null) return ValidationProblem(validate.FaliedValidation);
+
+            if (string.IsNullOrWhiteSpace(postComment.UserId)) return BadRequest("Login to create a comment");
 
             try
             {
@@ -43,9 +50,9 @@ namespace DiscussedApi.Controllers.V1.Comments
 
         [Authorize]
         [HttpPatch("LikeComment")]
-        public async Task<IActionResult> LikeCommentAsync([FromBody] LikeCommentDto commentToLike)
+        public async Task<IActionResult> LikeCommentAsync([FromBody] LikeCommentDto commentToLike,
+            [FromServices] IValidator<LikeCommentDto> validator)
         {
-            if (commentToLike.CommentId == null) return BadRequest("Comment id cannot be null");
 
             if (string.IsNullOrWhiteSpace(commentToLike.UserId)) return BadRequest("User Id liking the comment cannot be null");
 

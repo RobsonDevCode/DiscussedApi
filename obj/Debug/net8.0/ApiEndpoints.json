@@ -1,12 +1,60 @@
 [
   {
-    "ContainingType": "DiscussedApi.Controllers.V1.TimeManagement.CommentController",
-    "Method": "GetComments",
-    "RelativePath": "V1/Comment/GetComments",
-    "HttpMethod": "GET",
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "LikeCommentAsync",
+    "RelativePath": "V1/Comment/LikeComment",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "commentToLike",
+        "Type": "Discusseddto.CommentDtos.LikeCommentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "PostCommentAsync",
+    "RelativePath": "V1/Comment/PostComment",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "postComment",
+        "Type": "Discusseddto.CommentDtos.NewCommentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "PostReplyToCommentAsync",
+    "RelativePath": "V1/Comment/PostReplyToComment",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "UnlikeCommentAsync",
+    "RelativePath": "V1/Comment/UnLikeComment",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "commentToUnlike",
+        "Type": "Discusseddto.CommentDtos.LikeCommentDto",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
