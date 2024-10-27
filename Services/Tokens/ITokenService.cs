@@ -1,4 +1,4 @@
-﻿using DiscussedApi.Models;
+﻿using DiscussedApi.Models.UserInfo;
 
 namespace DiscussedApi.Services.Tokens
 {

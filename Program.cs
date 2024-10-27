@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using DiscussedApi.Configuration;
-using DiscussedApi.Models;
 using DiscussedApi.Processing.UserPocessing;
 using DiscussedApi.Processing.UserProcessing;
 using DiscussedApi.Services.Email;
@@ -16,12 +15,14 @@ using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using DiscussedApi.Processing.Comments;
-using DiscussedApi.Reopisitory;
 using FluentValidation;
 using Discusseddto.CommentDtos;
 using DiscussedApi.Validations;
 using FluentValidation.AspNetCore;
 using DiscussedApi.Common.Validation;
+using DiscussedApi.Models.UserInfo;
+using DiscussedApi.Reopisitory.Comments;
+using DiscussedApi.Reopisitory.Profiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -122,6 +123,7 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IUserProcessing, UserProcessing>();
 builder.Services.AddTransient<ICommentProcessing, CommentProcessing>();
 builder.Services.AddTransient<ICommentDataAccess, CommentDataAccess>();
+builder.Services.AddTransient<IProfileDataAccess, ProfileDataAccess>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 

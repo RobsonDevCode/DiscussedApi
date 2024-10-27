@@ -1,9 +1,9 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using DiscussedApi.Configuration;
-using DiscussedApi.Models;
 using System.Security.Claims;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
+using DiscussedApi.Models.UserInfo;
 namespace DiscussedApi.Services.Tokens
 {
     public class TokenService : ITokenService

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using DiscussedApi.Models;
 using DiscussedApi.Processing.UserPocessing;
 using DiscussedDto.User;
+using DiscussedApi.Models.UserInfo;
 
 namespace DiscussedApi.Processing.UserProcessing
 {

@@ -1,9 +1,14 @@
 ﻿using DiscussedApi.Models;
 using DiscussedApi.Models.Comments;
-using DiscussedApi.Reopisitory;
+using DiscussedApi.Models.UserInfo;
+using DiscussedApi.Reopisitory.Comments;
+using DiscussedApi.Reopisitory.Profiles;
 using Discusseddto;
 using Discusseddto.Comment;
 using Discusseddto.CommentDtos;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using MimeKit.Cryptography;
 using NLog;
 using System.Collections.Generic;
 
@@ -11,14 +16,26 @@ namespace DiscussedApi.Processing.Comments
 {
     public class CommentProcessing : ICommentProcessing
     {
-        private static ICommentDataAccess _commentDataAcces;
+        private readonly ICommentDataAccess _commentDataAccess;
+        private readonly IProfileDataAccess _profileDataAccess;
+        private readonly UserManager<User> _userManager;
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
-        public CommentProcessing(ICommentDataAccess commentDataAccess)
+        public CommentProcessing(ICommentDataAccess commentDataAccess, IProfileDataAccess profileDataAccess, UserManager<User> userManager)
         {
-             _commentDataAcces = commentDataAccess;
+             _commentDataAccess = commentDataAccess;
+            _profileDataAccess = profileDataAccess;
         }
-        public Task<List<Comment>> GetCommentsAsync()
+        public async Task<List<Comment>> GetCommentsAsync(string userId)
         {
+            var userFollowing = await _profileDataAccess.GetUserFollowing(userId);
+
+            //if user following is null check if they are a new user and display content based on prompts selected
+            if (userFollowing == null) 
+            {
+                if (!await isNewUser(userId)) throw new Exception("User follows no accounts");
+
+                var result = await _commentDataAccess.GetCommentsForNewUserAsync(userId);
+            }
             throw new NotImplementedException();
         }
 
@@ -30,7 +47,7 @@ namespace DiscussedApi.Processing.Comments
 
                 if (!await isCommentValid(likeCommentDto.CommentId)) throw new KeyNotFoundException("Comment not found or has been deleted");
 
-                return await _commentDataAcces.UpdateCommentLikesAsync(likeCommentDto);
+                return await _commentDataAccess.UpdateCommentLikesAsync(likeCommentDto);
             }
             catch (Exception ex) 
             {
@@ -67,7 +84,7 @@ namespace DiscussedApi.Processing.Comments
                     DtUpdated = DateTime.UtcNow,
                 };
 
-                 await _commentDataAcces.PostCommentAsync(comment);
+                await _commentDataAccess.PostCommentAsync(comment);
             }
             catch (Exception ex) 
             {
@@ -78,7 +95,23 @@ namespace DiscussedApi.Processing.Comments
         }
 
         private async Task<bool> isCommentValid(Guid? commentId) => 
-            await _commentDataAcces.IsCommentValid(commentId);
+            await _commentDataAccess.IsCommentValid(commentId);
         
+        private async Task<bool> isNewUser(string userId)
+        {
+            try
+            {
+                 User? user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId &&
+                                                                         x.CreatedAt < DateTime.UtcNow.AddDays(-(int)DateTime.UtcNow.DayOfWeek - 3));
+                if(user == null) return false;
+
+                return true;
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
     }
 }

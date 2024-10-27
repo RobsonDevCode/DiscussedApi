@@ -1,19 +1,19 @@
 ﻿using DiscussedApi.Data.UserComments;
-using DiscussedApi.Models;
 using DiscussedApi.Models.Comments;
+using DiscussedApi.Models.UserInfo;
 using Discusseddto;
 using Discusseddto.Comment;
 using Discusseddto.CommentDtos;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 
-namespace DiscussedApi.Reopisitory
+namespace DiscussedApi.Reopisitory.Comments
 {
     public class CommentDataAccess : ICommentDataAccess
     {
         CommentsDBContext _commentDbAccess = new();
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
-        public CommentDataAccess() 
+        public CommentDataAccess()
         {
 
         }
@@ -30,18 +30,16 @@ namespace DiscussedApi.Reopisitory
 
         public async Task PostCommentAsync(Comment comment)
         {
-           
+
             try
             {
-               await _commentDbAccess.Comments.AddAsync(comment);
-               var result = await _commentDbAccess.SaveChangesAsync();
+                var add = await _commentDbAccess.Comments.AddAsync(comment);
+                var result = await _commentDbAccess.SaveChangesAsync();
 
-               if(result == 0)
-               {
-                    throw new Exception("Query Excecuted but no rows were affected");
-               }
+                if (result == 0) throw new Exception("Query Excecuted but no rows were affected");
+
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 _logger.Error(ex, ex.Message);
                 throw;
@@ -62,11 +60,11 @@ namespace DiscussedApi.Reopisitory
                     throw new ArgumentNullException("Comment id null when check if valid");
                 }
 
-               var result =  await _commentDbAccess.Comments.CountAsync(x => x.Id.Equals(commentId));
+                var result = await _commentDbAccess.Comments.CountAsync(x => x.Id.Equals(commentId));
 
-               if (result > 0) return true;
+                if (result > 0) return true;
 
-               return false;
+                return false;
             }
             catch (Exception ex)
             {
@@ -88,7 +86,7 @@ namespace DiscussedApi.Reopisitory
                     throw new Exception($"Error while attempting to update likes on comment {likedComment.CommentId}");
                 }
 
-                request.Likes++; 
+                request.Likes++;
 
                 var result = await _commentDbAccess.SaveChangesAsync();
 

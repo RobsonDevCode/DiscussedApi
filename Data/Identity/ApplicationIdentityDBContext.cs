@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using DiscussedApi.Models;
 using DiscussedApi.Configuration;
 using Microsoft.Extensions.Options;
+using DiscussedApi.Models.UserInfo;
 
 namespace DiscussedApi.Data.Identity
 {

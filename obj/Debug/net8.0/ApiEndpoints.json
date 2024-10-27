@@ -1,6 +1,22 @@
 [
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "GetComments",
+    "RelativePath": "V1/Comment/GetTodaysComments",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
     "Method": "LikeCommentAsync",
     "RelativePath": "V1/Comment/LikeComment",
     "HttpMethod": "PATCH",

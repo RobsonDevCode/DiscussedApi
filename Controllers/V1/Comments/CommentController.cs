@@ -1,15 +1,20 @@
 ﻿using DiscussedApi.Common.Validations;
 using DiscussedApi.Models;
 using DiscussedApi.Models.Comments;
+using DiscussedApi.Models.UserInfo;
 using DiscussedApi.Processing.Comments;
+using DiscussedApi.Validations;
 using Discusseddto.CommentDtos;
 using FluentEmail.Core;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NLog;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace DiscussedApi.Controllers.V1.Comments
 {
@@ -19,11 +24,13 @@ namespace DiscussedApi.Controllers.V1.Comments
     {
         private NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         private readonly ICommentProcessing _commentProcessing;
+
         public CommentController(ICommentProcessing commentProcessing)
         {
              _commentProcessing = commentProcessing;
         }
 
+        [Authorize]
         [HttpPost("PostComment")]
         public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment,
             [FromServices] IValidator<NewCommentDto> validator)
@@ -33,7 +40,7 @@ namespace DiscussedApi.Controllers.V1.Comments
 
             if(validate.FaliedValidation != null) return ValidationProblem(validate.FaliedValidation);
 
-            if (string.IsNullOrWhiteSpace(postComment.UserId)) return BadRequest("Login to create a comment");
+            if (string.IsNullOrWhiteSpace(postComment.UserId)) return BadRequest(ModelState);
 
             try
             {
@@ -50,11 +57,9 @@ namespace DiscussedApi.Controllers.V1.Comments
 
         [Authorize]
         [HttpPatch("LikeComment")]
-        public async Task<IActionResult> LikeCommentAsync([FromBody] LikeCommentDto commentToLike,
-            [FromServices] IValidator<LikeCommentDto> validator)
+        public async Task<IActionResult> LikeCommentAsync([FromBody] LikeCommentDto commentToLike)
         {
-
-            if (string.IsNullOrWhiteSpace(commentToLike.UserId)) return BadRequest("User Id liking the comment cannot be null");
+            if (string.IsNullOrWhiteSpace(commentToLike.UserId)) return BadRequest(ModelState);
 
             try
             {
@@ -70,6 +75,29 @@ namespace DiscussedApi.Controllers.V1.Comments
                 _logger.Error (ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
+
+        }
+
+        [Authorize]
+        [HttpGet("GetTodaysComments")]
+        public async Task<IActionResult> GetComments([Required(ErrorMessage = "User Id is Required")]string userId)
+        {
+            try
+            {
+                if(string.IsNullOrWhiteSpace(userId)) return BadRequest(ModelState);    
+
+                var result = await _commentProcessing.GetCommentsAsync(userId);
+
+                if (result.Count() == 0) return BadRequest("User id given returned no comment content");
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+
 
         }
 

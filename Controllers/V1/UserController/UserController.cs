@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using DiscussedApi.Configuration;
-using DiscussedApi.Models;
 using DiscussedApi.Processing.UserPocessing;
 using DiscussedApi.Services.Email;
 using DiscussedApi.Services.Tokens;
 using DiscussedDto.User;
 using System.ComponentModel.DataAnnotations;
 using NLog;
+using DiscussedApi.Models.UserInfo;
 
 namespace DiscussedApi.Controllers.V1.UserController
 {
@@ -141,7 +141,6 @@ namespace DiscussedApi.Controllers.V1.UserController
         {
             try
             {
-
                 if (string.IsNullOrWhiteSpace(recoverUser.NewPassword) || string.IsNullOrWhiteSpace(recoverUser.Email))
                     return BadRequest("Attempted to recover account failed Email or Password is incorrect");
 

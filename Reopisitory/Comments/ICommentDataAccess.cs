@@ -1,9 +1,9 @@
-﻿using DiscussedApi.Models;
-using DiscussedApi.Models.Comments;
+﻿using DiscussedApi.Models.Comments;
+using DiscussedApi.Models.UserInfo;
 using Discusseddto;
 using Discusseddto.CommentDtos;
 
-namespace DiscussedApi.Reopisitory
+namespace DiscussedApi.Reopisitory.Comments
 {
     public interface ICommentDataAccess
     {
@@ -14,5 +14,6 @@ namespace DiscussedApi.Reopisitory
 
         Task<Comment> UpdateCommentLikesAsync(LikeCommentDto likedComment);
         Task<bool> IsCommentValid(Guid? commentId);
+        Task<List<Comment>> GetCommentsForNewUserAsync(string userId);
     }
 }
