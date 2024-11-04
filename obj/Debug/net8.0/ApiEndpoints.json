@@ -9,7 +9,7 @@
     "Parameters": [
       {
         "Name": "userId",
-        "Type": "System.Guid",
+        "Type": "System.String",
         "IsRequired": false
       }
     ],
@@ -106,6 +106,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DiscussedApi.Controllers.V1.Profile.ProfileController",
+    "Method": "FollowUser",
+    "RelativePath": "V1/Profile/FollowUser",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "followUser",
+        "Type": "Discusseddto.Profile.ProfileDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "EmailConfirmation",
     "RelativePath": "V1/User/EmailConfirmation",
@@ -177,6 +193,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
+    "Method": "AutoLogin",
+    "RelativePath": "V1/User/TestLogin",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   }
 ]

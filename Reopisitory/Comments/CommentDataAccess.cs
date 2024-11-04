@@ -23,8 +23,29 @@ namespace DiscussedApi.Reopisitory.Comments
             throw new NotImplementedException();
         }
 
-        public Task<Dictionary<List<Comment>, List<Reply>>> GetCommentsAsyncEndPoint()
+        public Task<Dictionary<List<Comment>, List<Reply>>> GetTopLikedCommentsAsyncEndPoint()
         {
+
+            throw new NotImplementedException();
+        }
+        public async Task<List<Comment>> GetCommentsForNewUserAsync(string userId)
+        {
+            try
+            {
+                var getTop50Liked = await _commentDbAccess.Comments
+                                           .OrderByDescending(x => x.Likes)
+                                           .Take(50)
+                                           .ToListAsync();
+
+                if (getTop50Liked.Count() == 0) throw new Exception("No Comments return when retriving commments for new user");
+
+                return getTop50Liked;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
             throw new NotImplementedException();
         }
 
@@ -100,5 +121,7 @@ namespace DiscussedApi.Reopisitory.Comments
                 throw;
             }
         }
+
+      
     }
 }

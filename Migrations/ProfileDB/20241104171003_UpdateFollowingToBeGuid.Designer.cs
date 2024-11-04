@@ -4,6 +4,7 @@ using DiscussedApi.Data.Profiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiscussedApi.Migrations.ProfileDB
 {
     [DbContext(typeof(ProfileDBContext))]
-    partial class ProfileDBContextModelSnapshot : ModelSnapshot
+    [Migration("20241104171003_UpdateFollowingToBeGuid")]
+    partial class UpdateFollowingToBeGuid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

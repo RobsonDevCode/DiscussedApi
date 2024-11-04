@@ -7,7 +7,7 @@ namespace DiscussedApi.Models.Profiles
         [Key]
         public Guid UserGuid { get; set; }
         public string UserName { get; set; }
-        public string? Name { get; set; }
+        public Guid? UserFollowing { get; set; }
         public bool? IsFollowing { get; set; }
 
     }

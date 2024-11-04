@@ -33,6 +33,21 @@ namespace DiscussedApi.Controllers.V1.UserController
             _userProcessing = userProcessing;
         }
 
+        #if DEBUG
+        [HttpGet("TestLogin")]
+        public async Task<IActionResult> AutoLogin()
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == "robsonsTester@gmail.com");
+
+            return Ok(new NewUserDto
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                Token = _tokenService.GeneratedToken(user)
+            });
+        }
+#endif
+
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto register)
         {

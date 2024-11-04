@@ -16,13 +16,11 @@ using NLog.Extensions.Logging;
 using NLog.Web;
 using DiscussedApi.Processing.Comments;
 using FluentValidation;
-using Discusseddto.CommentDtos;
-using DiscussedApi.Validations;
-using FluentValidation.AspNetCore;
 using DiscussedApi.Common.Validation;
 using DiscussedApi.Models.UserInfo;
 using DiscussedApi.Reopisitory.Comments;
 using DiscussedApi.Reopisitory.Profiles;
+using DiscussedApi.Processing.Profile;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,6 +122,7 @@ builder.Services.AddTransient<IUserProcessing, UserProcessing>();
 builder.Services.AddTransient<ICommentProcessing, CommentProcessing>();
 builder.Services.AddTransient<ICommentDataAccess, CommentDataAccess>();
 builder.Services.AddTransient<IProfileDataAccess, ProfileDataAccess>();
+builder.Services.AddTransient<IProfileProcessing, ProfileProcessing>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 

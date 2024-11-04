@@ -29,13 +29,18 @@ namespace DiscussedApi.Processing.Comments
         {
             var userFollowing = await _profileDataAccess.GetUserFollowing(userId);
 
+            if (userFollowing.Count() == 0) throw new Exception("User follows no accounts");
+
+            var toplikedComments = await _commentDataAccess.GetTopLikedCommentsAsyncEndPoint();
+
             //if user following is null check if they are a new user and display content based on prompts selected
             if (userFollowing == null) 
             {
                 if (!await isNewUser(userId)) throw new Exception("User follows no accounts");
 
-                var result = await _commentDataAccess.GetCommentsForNewUserAsync(userId);
+                return await _commentDataAccess.GetCommentsForNewUserAsync(userId);
             }
+
             throw new NotImplementedException();
         }
 
@@ -76,6 +81,7 @@ namespace DiscussedApi.Processing.Comments
                 Comment comment = new()
                 {
                     Id = newComment.Id,
+                    TopicId = newComment.TopicId,
                     UserId = newComment.UserId,
                     Context = newComment.Content,
                     ReplyCount = 0,
@@ -101,7 +107,7 @@ namespace DiscussedApi.Processing.Comments
         {
             try
             {
-                 User? user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId &&
+                User? user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId &&
                                                                          x.CreatedAt < DateTime.UtcNow.AddDays(-(int)DateTime.UtcNow.DayOfWeek - 3));
                 if(user == null) return false;
 

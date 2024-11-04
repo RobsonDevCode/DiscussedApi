@@ -10,7 +10,7 @@ namespace DiscussedApi.Models.Comments
 
         [Key]
         public Guid? Id { get; set; } = Guid.NewGuid();
-
+        public string TopicId { get; set; } = string.Empty;
         [Required]
         public string UserId { get; set; } = string.Empty;
 
