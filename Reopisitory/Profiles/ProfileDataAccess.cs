@@ -43,10 +43,13 @@ namespace DiscussedApi.Reopisitory.Profiles
                     IsFollowing = true
                 };
 
-                await _profileDBContext.Following.AddAsync(following);
-                var result = await _profileDBContext.SaveChangesAsync();
+                using (var connection = _profileDBContext)
+                {
+                    await connection.Following.AddAsync(following);
 
-                if (result == 0) throw new Exception("Data query was executed but no change was made");
+                    var result = await connection.SaveChangesAsync();
+                    if (result == 0) throw new Exception("Data query was executed but no change was made");
+                }
                 
             }
             catch(Exception ex)
@@ -56,9 +59,23 @@ namespace DiscussedApi.Reopisitory.Profiles
             }
         }
 
-        public Task UnFollowUser(ProfileDto profile)
+        public async Task UnFollowUser(ProfileDto profile)
         {
-            throw new NotImplementedException();
+            Following following = new Following
+            {
+                UserName = profile.UserName,
+                UserGuid = profile.UserGuid,
+                UserFollowing = profile.SelectedUser,
+                IsFollowing = false
+            };
+            using (var connection = _profileDBContext)
+            {
+               connection.Remove(following);
+
+               var result = await connection.SaveChangesAsync();
+               if (result == 0) throw new Exception("Data query was executed but no change was made");
+            }
+
         }
 
         public Task<bool> DoesUserExistAsync(ProfileDto profile)

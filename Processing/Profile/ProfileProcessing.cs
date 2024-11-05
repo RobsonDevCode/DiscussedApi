@@ -34,8 +34,19 @@ namespace DiscussedApi.Processing.Profile
             }
         }
 
-        public Task UnfollowUser(ProfileDto profileDto)
+        public async Task UnfollowUser(ProfileDto profile)
         {
+            try
+            {
+                if (!await DoesUserExist(profile)) throw new Exception("User deleted their account or cannot be followed!");
+
+                await _profileDateAccess.UnFollowUser(profile);
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex);
+                throw;
+            }
             throw new NotImplementedException();
         }
 
@@ -45,7 +56,7 @@ namespace DiscussedApi.Processing.Profile
             {
                 if (profile == null) throw new ArgumentNullException($"{nameof(profile)} is cannot be null when checking if user Exists");
 
-                bool exists =(await _userManager.Users.CountAsync(x => x.Id.Equals(profile.SelectedUser)) == 0) ? false : true;
+                bool exists = (await _userManager.Users.CountAsync(x => x.Id.Equals(profile.SelectedUser)) == 0) ? false : true;
 
                 return exists;
             }
