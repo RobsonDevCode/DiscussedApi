@@ -11,15 +11,18 @@ namespace DiscussedApi.Reopisitory.Profiles
         ProfileDBContext _profileDBContext = new();
         private readonly NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public async Task<List<Following>> GetUserFollowing(string userId)
+        public async Task<List<Guid?>> GetUserFollowing(string userId)
         {
             try
             {
                 if (!Guid.TryParse(userId, out Guid userIdAsGuid)) throw new FormatException($"Error converting: {userId} to a Guid"); 
 
-                var following = await _profileDBContext.Following.Where(x => x.UserGuid == userIdAsGuid)
+                var following = await _profileDBContext.Following
+                    .Where(x => x.UserGuid == userIdAsGuid)
+                    .Select(x => x.UserFollowing)
                     .Take(100)
                     .ToListAsync();
+
 
                 return following;
             }
@@ -78,9 +81,5 @@ namespace DiscussedApi.Reopisitory.Profiles
 
         }
 
-        public Task<bool> DoesUserExistAsync(ProfileDto profile)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

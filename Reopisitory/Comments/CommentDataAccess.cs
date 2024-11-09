@@ -1,5 +1,7 @@
-﻿using DiscussedApi.Data.UserComments;
+﻿using DiscussedApi.Configuration;
+using DiscussedApi.Data.UserComments;
 using DiscussedApi.Models.Comments;
+using DiscussedApi.Models.Profiles;
 using DiscussedApi.Models.UserInfo;
 using Discusseddto;
 using Discusseddto.Comment;
@@ -23,9 +25,18 @@ namespace DiscussedApi.Reopisitory.Comments
             throw new NotImplementedException();
         }
 
-        public Task<Dictionary<List<Comment>, List<Reply>>> GetTopLikedCommentsAsyncEndPoint()
+        public async Task<Dictionary<List<Comment>, List<Reply>>> GetTopLikedCommentsAsyncEndPoint(List<Following> followings)
         {
+            try{
 
+                using (var connection = _commentDbAccess){
+                   
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
             throw new NotImplementedException();
         }
         public async Task<List<Comment>> GetCommentsForNewUserAsync(string userId)
@@ -122,6 +133,40 @@ namespace DiscussedApi.Reopisitory.Comments
             }
         }
 
-      
+        public async Task<List<Comment>> GetCommentsPostedByFollowing(List<Guid?> userIds)
+        {
+            if(!userIds.Any())
+                throw new ArgumentNullException("user ids cannot be null ");
+
+            try
+            {
+                var yesterday = DateTime.UtcNow.Date.AddDays(-1);
+
+                List<Comment> comments= new();
+
+                foreach (var userId in userIds)
+                {
+                    comments.AddRange(await _commentDbAccess.Comments
+                                   .Where(c => c.UserId == userId.ToString() && c.DtCreated >= yesterday) //TODO: optimise make string a guid
+                                   .OrderByDescending(x => x.DtCreated)
+                                   .Take(Settings.CommentMax)
+                                   .ToListAsync());
+
+                }
+
+
+                if (!comments.Any())
+                {
+                    throw new Exception($"No comments found for user {userIds} since {yesterday}");
+                }
+
+                return comments;
+            }
+
+            catch(Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }

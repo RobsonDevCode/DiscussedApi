@@ -33,7 +33,6 @@ namespace DiscussedApi.Controllers.V1.Comments
 
     
 
-        [Authorize]
         [HttpPost("PostComment")]
         public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment,
             [FromServices] IValidator<NewCommentDto> validator)
@@ -75,13 +74,12 @@ namespace DiscussedApi.Controllers.V1.Comments
 
             catch(Exception ex)
             {
-                _logger.Error (ex, ex.Message);
+                _logger.Error (ex.Message);
                 return StatusCode(500, ex.Message);
             }
 
         }
 
-        [Authorize]
         [HttpGet("GetTodaysComments")]
         public async Task<IActionResult> GetComments([Required(ErrorMessage = "User Id is Required")]string userId)
         {
@@ -97,7 +95,6 @@ namespace DiscussedApi.Controllers.V1.Comments
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
 

@@ -122,6 +122,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DiscussedApi.Controllers.V1.Profile.ProfileController",
+    "Method": "UnfollowUser",
+    "RelativePath": "V1/Profile/UnfollowUser",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "unfollow",
+        "Type": "Discusseddto.Profile.ProfileDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "EmailConfirmation",
     "RelativePath": "V1/User/EmailConfirmation",

@@ -24,24 +24,37 @@ namespace DiscussedApi.Processing.Comments
         {
              _commentDataAccess = commentDataAccess;
             _profileDataAccess = profileDataAccess;
+            _userManager = userManager;
         }
         public async Task<List<Comment>> GetCommentsAsync(string userId)
         {
-            var userFollowing = await _profileDataAccess.GetUserFollowing(userId);
-
-            if (userFollowing.Count() == 0) throw new Exception("User follows no accounts");
-
-            var toplikedComments = await _commentDataAccess.GetTopLikedCommentsAsyncEndPoint();
-
-            //if user following is null check if they are a new user and display content based on prompts selected
-            if (userFollowing == null) 
+            try
             {
-                if (!await isNewUser(userId)) throw new Exception("User follows no accounts");
+                List<Guid?> userFollowing = await _profileDataAccess.GetUserFollowing(userId);
 
-                return await _commentDataAccess.GetCommentsForNewUserAsync(userId);
+                //if user following is null check if they are a new user and display content based on prompts selected
+                if (userFollowing.Count() == 0 || userFollowing == null)
+                {
+                    if (!await isNewUser(userId)) throw new Exception("User follows no accounts");
+
+                    return await _commentDataAccess.GetCommentsForNewUserAsync(userId);
+                }
+               
+
+                //go get comments from user following who's posted
+                var commentsFromFollowed = await _commentDataAccess.GetCommentsPostedByFollowing(userFollowing);
+
+                if(commentsFromFollowed == null) throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
+
+                if (commentsFromFollowed.Count() == 0) throw new InvalidOperationException("Comments From Followers cannot be empty when user has followers");
+
+                return commentsFromFollowed;
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
 
-            throw new NotImplementedException();
         }
 
         public async Task<Comment> LikeCommentAsync(LikeCommentDto likeCommentDto)

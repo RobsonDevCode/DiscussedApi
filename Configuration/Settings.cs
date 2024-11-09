@@ -14,8 +14,9 @@ namespace DiscussedApi.Configuration
 
         public static ConnectionStrings ConnectionString => new ConnectionStrings(_config);
         public static JwtSettings JwtSettings => new JwtSettings(_config);
-
         public static EmailSettings EmailSettings => new EmailSettings(_config);
+
+        public static int CommentMax = 100; 
 
     }
 }
