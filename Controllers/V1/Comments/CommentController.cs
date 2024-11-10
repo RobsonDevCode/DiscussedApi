@@ -31,10 +31,10 @@ namespace DiscussedApi.Controllers.V1.Comments
         }
 
 
-    
 
+        [Authorize]
         [HttpPost("PostComment")]
-        public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment,
+        public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment,CancellationToken cancellationToken, 
             [FromServices] IValidator<NewCommentDto> validator)
         {
             //validate request
@@ -46,7 +46,7 @@ namespace DiscussedApi.Controllers.V1.Comments
 
             try
             {
-                await _commentProcessing.PostCommentAsync(postComment);
+                await _commentProcessing.PostCommentAsync(postComment, cancellationToken);
 
                 return Ok();
             }
@@ -74,20 +74,20 @@ namespace DiscussedApi.Controllers.V1.Comments
 
             catch(Exception ex)
             {
-                _logger.Error (ex.Message);
+                _logger.Error (ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
 
         }
 
         [HttpGet("GetTodaysComments")]
-        public async Task<IActionResult> GetComments([Required(ErrorMessage = "User Id is Required")]string userId)
+        public async Task<IActionResult> GetComments([Required(ErrorMessage = "User Id is Required")]string userId, CancellationToken cancellationToken)
         {
+            if(string.IsNullOrWhiteSpace(userId)) return BadRequest(ModelState);    
+
             try
             {
-                if(string.IsNullOrWhiteSpace(userId)) return BadRequest(ModelState);    
-
-                var result = await _commentProcessing.GetCommentsAsync(userId);
+                var result = await _commentProcessing.GetCommentsAsync(userId, cancellationToken);
 
                 if (result.Count() == 0) return BadRequest("User id given returned no comment content");
 
@@ -95,6 +95,7 @@ namespace DiscussedApi.Controllers.V1.Comments
             }
             catch (Exception ex)
             {
+                _logger.Error (ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
 

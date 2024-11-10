@@ -21,6 +21,8 @@ using DiscussedApi.Models.UserInfo;
 using DiscussedApi.Reopisitory.Comments;
 using DiscussedApi.Reopisitory.Profiles;
 using DiscussedApi.Processing.Profile;
+using System.Runtime.InteropServices;
+using DiscussedApi.Processing.Comments.ParallelProcess;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,7 +55,14 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 12;
+
+    options.User.RequireUniqueEmail = true;
+    options.User.AllowedUserNameCharacters = Settings.IdentitySettings.AllowedChars.DefaultAscii +
+                                             Settings.IdentitySettings.AllowedChars.Japanese +
+                                             Settings.IdentitySettings.AllowedChars.LatinExtended;
+
 }).AddEntityFrameworkStores<ApplicationIdentityDBContext>();
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -123,6 +132,7 @@ builder.Services.AddTransient<ICommentProcessing, CommentProcessing>();
 builder.Services.AddTransient<ICommentDataAccess, CommentDataAccess>();
 builder.Services.AddTransient<IProfileDataAccess, ProfileDataAccess>();
 builder.Services.AddTransient<IProfileProcessing, ProfileProcessing>();
+builder.Services.AddTransient<IProcessCommentsConcurrently,  ProcessCommentsConcurrently>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 

@@ -1,6 +1,7 @@
 ﻿using DiscussedApi.Models;
 using DiscussedApi.Models.Comments;
 using DiscussedApi.Models.UserInfo;
+using DiscussedApi.Processing.Comments.ParallelProcess;
 using DiscussedApi.Reopisitory.Comments;
 using DiscussedApi.Reopisitory.Profiles;
 using Discusseddto;
@@ -18,15 +19,17 @@ namespace DiscussedApi.Processing.Comments
     {
         private readonly ICommentDataAccess _commentDataAccess;
         private readonly IProfileDataAccess _profileDataAccess;
+        private readonly IProcessCommentsConcurrently _processCommentsConcurrently;
         private readonly UserManager<User> _userManager;
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
-        public CommentProcessing(ICommentDataAccess commentDataAccess, IProfileDataAccess profileDataAccess, UserManager<User> userManager)
+        public CommentProcessing(ICommentDataAccess commentDataAccess, IProfileDataAccess profileDataAccess, UserManager<User> userManager, IProcessCommentsConcurrently processCommentsConcurrently)
         {
              _commentDataAccess = commentDataAccess;
             _profileDataAccess = profileDataAccess;
             _userManager = userManager;
+            _processCommentsConcurrently = processCommentsConcurrently;
         }
-        public async Task<List<Comment>> GetCommentsAsync(string userId)
+        public async Task<List<Comment>> GetCommentsAsync(string userId, CancellationToken cancellationToken)
         {
             try
             {
@@ -39,22 +42,25 @@ namespace DiscussedApi.Processing.Comments
 
                     return await _commentDataAccess.GetCommentsForNewUserAsync(userId);
                 }
-               
 
-                //go get comments from user following who's posted
-                var commentsFromFollowed = await _commentDataAccess.GetCommentsPostedByFollowing(userFollowing);
+                //get comments from user following who's posted
+                //var commentsFromFollowed = await _commentDataAccess.GetCommentsPostedByFollowing(userFollowing);
+                var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, cancellationToken);
 
-                if(commentsFromFollowed == null) throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
+                if (commentsFromFollowed == null) throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
 
                 if (commentsFromFollowed.Count() == 0) throw new InvalidOperationException("Comments From Followers cannot be empty when user has followers");
 
                 return commentsFromFollowed;
+
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, ex.Message);
                 throw;
             }
 
+            throw new NotImplementedException();
         }
 
         public async Task<Comment> LikeCommentAsync(LikeCommentDto likeCommentDto)
@@ -74,7 +80,7 @@ namespace DiscussedApi.Processing.Comments
             }
         }
 
-        public async Task PostCommentAsync(NewCommentDto newComment)
+        public async Task PostCommentAsync(NewCommentDto newComment, CancellationToken cancellationToken)
         {
 
             if (newComment == null)
@@ -103,7 +109,7 @@ namespace DiscussedApi.Processing.Comments
                     DtUpdated = DateTime.UtcNow,
                 };
 
-                await _commentDataAccess.PostCommentAsync(comment);
+                await _commentDataAccess.PostCommentAsync(comment, cancellationToken);
             }
             catch (Exception ex) 
             {

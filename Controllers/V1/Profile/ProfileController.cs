@@ -27,7 +27,6 @@ namespace DiscussedApi.Controllers.V1.Profile
 
             if (validateRequest.FaliedValidation != null) return ValidationProblem(validateRequest.FaliedValidation);
 
-
             try
             {
                 await _profileProcessing.FollowUser(followUser);

@@ -37,14 +37,21 @@ namespace DiscussedApi.Controllers.V1.UserController
         [HttpGet("TestLogin")]
         public async Task<IActionResult> AutoLogin()
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == "robsonsTester@gmail.com");
-
-            return Ok(new NewUserDto
+            try
             {
-                UserName = user.UserName,
-                Email = user.Email,
-                Token = _tokenService.GeneratedToken(user)
-            });
+                var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == "robsonsTester@gmail.com");
+
+                return Ok(new NewUserDto
+                {
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Token = _tokenService.GeneratedToken(user)
+                });
+            }
+            catch (Exception ex) {
+            return StatusCode(500, ex.Message);
+            }
+
         }
 #endif
 
@@ -66,7 +73,7 @@ namespace DiscussedApi.Controllers.V1.UserController
             try 
             { 
                 var createcUser = await _userManager.CreateAsync(user, register.Password);
-                var test = await _userManager.GetUsersInRoleAsync("User");
+
                 if (createcUser.Succeeded)
                 {
                     var roleResult = await _userManager.AddToRoleAsync(user, "User");

@@ -7,8 +7,8 @@ namespace DiscussedApi.Processing.Comments
 {
     public interface ICommentProcessing
     {
-       Task<List<Comment>> GetCommentsAsync(string userId);
-       Task PostCommentAsync(NewCommentDto comment);
+       Task<List<Comment>> GetCommentsAsync(string userId, CancellationToken cancellationToken);
+       Task PostCommentAsync(NewCommentDto comment, CancellationToken cancellationToken);
        Task<Comment> LikeCommentAsync(LikeCommentDto likeCommentDto);
     }
 }

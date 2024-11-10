@@ -46,13 +46,10 @@ namespace DiscussedApi.Reopisitory.Profiles
                     IsFollowing = true
                 };
 
-                using (var connection = _profileDBContext)
-                {
-                    await connection.Following.AddAsync(following);
+                await _profileDBContext.Following.AddAsync(following);
+                var result = await _profileDBContext.SaveChangesAsync();
 
-                    var result = await connection.SaveChangesAsync();
-                    if (result == 0) throw new Exception("Data query was executed but no change was made");
-                }
+                if (result == 0) throw new Exception("Data query was executed but no change was made");
                 
             }
             catch(Exception ex)
