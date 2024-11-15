@@ -23,6 +23,8 @@ using DiscussedApi.Reopisitory.Profiles;
 using DiscussedApi.Processing.Profile;
 using System.Runtime.InteropServices;
 using DiscussedApi.Processing.Comments.ParallelProcess;
+using DiscussedApi.Processing.Topics;
+using DiscussedApi.Reopisitory.Topics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,7 +95,7 @@ builder.Services.AddSwaggerGen(g =>
 {
     g.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Personal Finance Manager Api V1",
+        Title = "Discussed Api V1",
         Version = "V1"
     });
 
@@ -133,7 +135,8 @@ builder.Services.AddTransient<ICommentDataAccess, CommentDataAccess>();
 builder.Services.AddTransient<IProfileDataAccess, ProfileDataAccess>();
 builder.Services.AddTransient<IProfileProcessing, ProfileProcessing>();
 builder.Services.AddTransient<IProcessCommentsConcurrently,  ProcessCommentsConcurrently>();
-
+builder.Services.AddTransient<ITopicProcessing, TopicProcessing>();
+builder.Services.AddTransient<ITopicDataAccess, TopicDataAccess>();
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 
 var app = builder.Build();

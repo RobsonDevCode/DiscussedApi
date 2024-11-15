@@ -1,4 +1,5 @@
-﻿using DiscussedApi.Models.UserInfo;
+﻿using DiscussedApi.Configuration;
+using DiscussedApi.Models.UserInfo;
 using DiscussedApi.Reopisitory.Profiles;
 using Discusseddto.Profile;
 using Microsoft.AspNetCore.Identity;
@@ -56,7 +57,7 @@ namespace DiscussedApi.Processing.Profile
             {
                 if (profile == null) throw new ArgumentNullException($"{nameof(profile)} is cannot be null when checking if user Exists");
 
-                bool exists = (await _userManager.Users.CountAsync(x => x.Id.Equals(profile.SelectedUser)) == 0) ? false : true;
+                bool exists = (await _userManager.Users.CountAsync(x => x.Id == profile.SelectedUser.ToString()) == 0) ? false : true;
 
                 return exists;
             }

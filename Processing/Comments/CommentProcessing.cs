@@ -1,9 +1,11 @@
 ﻿using DiscussedApi.Models;
 using DiscussedApi.Models.Comments;
+using DiscussedApi.Models.Topic;
 using DiscussedApi.Models.UserInfo;
 using DiscussedApi.Processing.Comments.ParallelProcess;
 using DiscussedApi.Reopisitory.Comments;
 using DiscussedApi.Reopisitory.Profiles;
+using DiscussedApi.Reopisitory.Topics;
 using Discusseddto;
 using Discusseddto.Comment;
 using Discusseddto.CommentDtos;
@@ -12,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using MimeKit.Cryptography;
 using NLog;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.ComponentModel.Design;
 
 namespace DiscussedApi.Processing.Comments
 {
@@ -20,16 +24,39 @@ namespace DiscussedApi.Processing.Comments
         private readonly ICommentDataAccess _commentDataAccess;
         private readonly IProfileDataAccess _profileDataAccess;
         private readonly IProcessCommentsConcurrently _processCommentsConcurrently;
+        private readonly ITopicDataAccess _topicDataAccess;
         private readonly UserManager<User> _userManager;
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
-        public CommentProcessing(ICommentDataAccess commentDataAccess, IProfileDataAccess profileDataAccess, UserManager<User> userManager, IProcessCommentsConcurrently processCommentsConcurrently)
+        public CommentProcessing(ICommentDataAccess commentDataAccess, IProfileDataAccess profileDataAccess, 
+                                UserManager<User> userManager, IProcessCommentsConcurrently processCommentsConcurrently,
+                                ITopicDataAccess topicDataAccess)
         {
              _commentDataAccess = commentDataAccess;
             _profileDataAccess = profileDataAccess;
             _userManager = userManager;
             _processCommentsConcurrently = processCommentsConcurrently;
+            _topicDataAccess = topicDataAccess;
         }
-        public async Task<List<Comment>> GetCommentsAsync(string userId, CancellationToken cancellationToken)
+
+        public async Task DeleteCommentAsync(Guid commentId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (!await _commentDataAccess.IsCommentValid(commentId))
+                    throw new KeyNotFoundException("Comment not found or has been deleted already");
+
+                 await _commentDataAccess.DeleteCommentAsyncEndpoint(commentId, cancellationToken);
+
+                _logger.Info($"Comment {commentId} has been deleted");
+            }
+            catch (Exception ex) 
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<Comment>> GetCommentsAsync(Guid userId,string topic, CancellationToken cancellationToken)
         {
             try
             {
@@ -40,12 +67,12 @@ namespace DiscussedApi.Processing.Comments
                 {
                     if (!await isNewUser(userId)) throw new Exception("User follows no accounts");
 
-                    return await _commentDataAccess.GetCommentsForNewUserAsync(userId);
+                    return await _commentDataAccess.GetCommentsForNewUserAsync(userId, topic);
                 }
 
+
                 //get comments from user following who's posted
-                //var commentsFromFollowed = await _commentDataAccess.GetCommentsPostedByFollowing(userFollowing);
-                var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, cancellationToken);
+                var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, topic ,cancellationToken);
 
                 if (commentsFromFollowed == null) throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
 
@@ -63,15 +90,28 @@ namespace DiscussedApi.Processing.Comments
             throw new NotImplementedException();
         }
 
-        public async Task<Comment> LikeCommentAsync(LikeCommentDto likeCommentDto)
+        public async Task<ImmutableList<Comment>> GetCommentsWithNoSignInAsync(CancellationToken cancellationToken, string topic)
         {
             try
             {
-                if (likeCommentDto.CommentId == null) throw new ArgumentException("CommentId is null");
+                //we dont need to do anything fancy here, a taste of what the app has to offer to get the user intrigued
+                return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic);
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
 
-                if (!await isCommentValid(likeCommentDto.CommentId)) throw new KeyNotFoundException("Comment not found or has been deleted");
+        public async Task<Comment> LikeOrDislikeCommentAsync(LikeCommentDto commentToEditDto)
+        {
+            try
+            {
+                if (!await _commentDataAccess.IsCommentValid(commentToEditDto.CommentId)) 
+                    throw new KeyNotFoundException("Comment not found or has been deleted");
 
-                return await _commentDataAccess.UpdateCommentLikesAsync(likeCommentDto);
+                return await _commentDataAccess.UpdateCommentLikesAsync(commentToEditDto);
             }
             catch (Exception ex) 
             {
@@ -87,12 +127,6 @@ namespace DiscussedApi.Processing.Comments
             {
                 _logger.Error("Error Posting Comment: Comment is null");
                 throw new ArgumentNullException("Comment was null");
-            }
-
-            if (string.IsNullOrWhiteSpace(newComment.UserId))
-            {
-                _logger.Error("Error Posting Comment: User info is null when attempting to post a comment");
-                 throw new ArgumentNullException("User was null");
             }
 
             try
@@ -119,14 +153,13 @@ namespace DiscussedApi.Processing.Comments
 
         }
 
-        private async Task<bool> isCommentValid(Guid? commentId) => 
-            await _commentDataAccess.IsCommentValid(commentId);
-        
-        private async Task<bool> isNewUser(string userId)
+      
+
+        private async Task<bool> isNewUser(Guid? userId)
         {
             try
             {
-                User? user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId &&
+                User? user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId.ToString() &&
                                                                          x.CreatedAt < DateTime.UtcNow.AddDays(-(int)DateTime.UtcNow.DayOfWeek - 3));
                 if(user == null) return false;
 

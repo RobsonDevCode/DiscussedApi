@@ -1,9 +1,10 @@
 ﻿using DiscussedApi.Models.Comments;
+using DiscussedApi.Models.Topic;
 
 namespace DiscussedApi.Processing.Comments.ParallelProcess
 {
     public interface IProcessCommentsConcurrently
     {
-        Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds, CancellationToken cancellationToken);
+        Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds,string topic ,CancellationToken cancellationToken);
     }
 }

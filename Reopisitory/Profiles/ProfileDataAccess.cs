@@ -3,6 +3,7 @@ using DiscussedApi.Models.Profiles;
 using DiscussedApi.Models.UserInfo;
 using Discusseddto.Profile;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Immutable;
 
 namespace DiscussedApi.Reopisitory.Profiles
 {
@@ -11,18 +12,15 @@ namespace DiscussedApi.Reopisitory.Profiles
         ProfileDBContext _profileDBContext = new();
         private readonly NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public async Task<List<Guid?>> GetUserFollowing(string userId)
+        public async Task<List<Guid?>> GetUserFollowing(Guid userId)
         {
             try
             {
-                if (!Guid.TryParse(userId, out Guid userIdAsGuid)) throw new FormatException($"Error converting: {userId} to a Guid"); 
-
                 var following = await _profileDBContext.Following
-                    .Where(x => x.UserGuid == userIdAsGuid)
+                    .Where(x => x.UserGuid == userId)
                     .Select(x => x.UserFollowing)
                     .Take(100)
                     .ToListAsync();
-
 
                 return following;
             }
@@ -31,8 +29,8 @@ namespace DiscussedApi.Reopisitory.Profiles
                 _logger.Error(ex);
                 throw;
             }
-            throw new NotImplementedException();
         }
+      
 
         public async Task FollowUser(ProfileDto profile)
         {
@@ -58,6 +56,7 @@ namespace DiscussedApi.Reopisitory.Profiles
                 throw;
             }
         }
+      
 
         public async Task UnFollowUser(ProfileDto profile)
         {
@@ -68,15 +67,15 @@ namespace DiscussedApi.Reopisitory.Profiles
                 UserFollowing = profile.SelectedUser,
                 IsFollowing = false
             };
-            using (var connection = _profileDBContext)
-            {
-               connection.Remove(following);
-
-               var result = await connection.SaveChangesAsync();
-               if (result == 0) throw new Exception("Data query was executed but no change was made");
-            }
+                
+            _profileDBContext.Following.Remove(following);
+            var result = await _profileDBContext.SaveChangesAsync();
+               
+            if (result == 0) 
+                throw new Exception("Data query was executed but no change was made");
 
         }
 
+       
     }
 }

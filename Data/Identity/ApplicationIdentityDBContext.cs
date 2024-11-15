@@ -16,7 +16,7 @@ namespace DiscussedApi.Data.Identity
         }
 
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        protected override async void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 

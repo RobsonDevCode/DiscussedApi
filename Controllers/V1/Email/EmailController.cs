@@ -64,5 +64,7 @@ namespace DiscussedApi.Controllers.V1.Email
                 return StatusCode(500, ex.Message);
             }
         }
+
+        //TODO add a topic notification probably better todo in a seperate app 
     }
 }

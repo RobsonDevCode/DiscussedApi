@@ -19,7 +19,7 @@ namespace DiscussedApi.Controllers.V1.Profile
             _profileProcessing = profileProcessing;
         }
 
-        [Authorize]
+       
         [HttpPost("FollowUser")]
         public async Task<IActionResult> FollowUser(ProfileDto followUser, [FromServices] IValidator<ProfileDto> validator)
         {

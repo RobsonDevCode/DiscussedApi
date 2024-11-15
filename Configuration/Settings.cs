@@ -19,9 +19,15 @@ namespace DiscussedApi.Configuration
         public static EmailSettings EmailSettings => new EmailSettings(_config);
         public static IdentitySettings  IdentitySettings => new IdentitySettings(_config);
 
+        //workers for updating following and follower for when a follow request is made
+        public static int FollowerTasks = 2;
+
+        //workers for concurrency in comments 
         public static int ParallelWorkers = 4;
 
-        public static int CommentMax = 100; 
+        public static int CommentMax = 100;
+
+        public static DateOnly DateToGetTopic = DateOnly.FromDateTime(DateTime.UtcNow);
 
     }
 }

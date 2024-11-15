@@ -1,16 +1,17 @@
 ﻿using DiscussedApi.Configuration;
-using DiscussedApi.Models.Profiles;
+using DiscussedApi.Data.Profiles;
 using Microsoft.EntityFrameworkCore;
+using DiscussedApi.Models.Topic;
 
-namespace DiscussedApi.Data.Profiles
+namespace DiscussedApi.Data.Topics
 {
-    public class ProfileDBContext : DbContext 
+    public class TopicDBContext : DbContext
     {
-        public ProfileDBContext()
+        public TopicDBContext()
         {
-            
+
         }
-        public ProfileDBContext(DbContextOptions<ProfileDBContext> dbContextOptions) : base(dbContextOptions) 
+        public TopicDBContext(DbContextOptions<TopicDBContext> dbContextOptions) : base(dbContextOptions)
         {
 
         }
@@ -24,7 +25,7 @@ namespace DiscussedApi.Data.Profiles
 
         }
 
-        public DbSet<Profile> Profile { get; set; }
-        public DbSet<Following> Following { get; set; }
+        public DbSet<Topic> Topics { get; set; }
+
     }
 }

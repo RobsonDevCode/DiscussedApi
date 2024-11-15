@@ -16,7 +16,7 @@ namespace DiscussedApi.Processing.Comments.ParallelProcess
             _commentDataAccess = commentDataAccess;
         }
 
-        public async Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds, CancellationToken cancellationToken)
+        public async Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds, string topic ,CancellationToken cancellationToken)
         {
             if (!userIds.Any())
                 throw new ArgumentException("User ids cannot be null when getting comments");
@@ -35,7 +35,7 @@ namespace DiscussedApi.Processing.Comments.ParallelProcess
                 {
                     try
                     {
-                        var getCommentsByUser = await _commentDataAccess.GetCommentsPostedByFollowing(userIds[i], cancellationToken);
+                        var getCommentsByUser = await _commentDataAccess.GetCommentsPostedByFollowing(userIds[i], topic ,cancellationToken);
                         comments.Add(getCommentsByUser);
                     }
                     catch (Exception ex)
@@ -49,8 +49,9 @@ namespace DiscussedApi.Processing.Comments.ParallelProcess
                     throw new Exception("No comments returned");
 
                 return comments.SelectMany(x => x)
-                               .OrderByDescending(x => x.Likes)
-                               .ThenByDescending(x => x.DtCreated).ToList();
+                               .OrderByDescending(x => x.DtCreated)
+                               .ThenByDescending(x => x.Likes)
+                               .ToList();
             }
 
             catch(Exception ex)
