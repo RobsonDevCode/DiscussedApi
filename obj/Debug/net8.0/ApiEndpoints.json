@@ -1,5 +1,63 @@
 [
   {
+    "ContainingType": "DiscussedApi.Controllers.V1.Topic.TopicController",
+    "Method": "GenerateTopicAsync",
+    "RelativePath": "api/Topic/GenerateTopic",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "DeleteComment",
+    "RelativePath": "V1/Comment/DeleteComment",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "commentId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "EditLikesOnCommentAsync",
+    "RelativePath": "V1/Comment/EditLikesOnCommentAsync",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "commentToEdit",
+        "Type": "Discusseddto.CommentDtos.LikeCommentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "GetCommentsWihoutSignIn",
+    "RelativePath": "V1/Comment/GetCommentsNoSignIn",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "topic",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
     "Method": "GetComments",
     "RelativePath": "V1/Comment/GetTodaysComments",
@@ -9,24 +67,13 @@
     "Parameters": [
       {
         "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "topicName",
         "Type": "System.String",
         "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
-    "Method": "LikeCommentAsync",
-    "RelativePath": "V1/Comment/LikeComment",
-    "HttpMethod": "PATCH",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "commentToLike",
-        "Type": "Discusseddto.CommentDtos.LikeCommentDto",
-        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -54,20 +101,10 @@
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
-    "Method": "UnlikeCommentAsync",
-    "RelativePath": "V1/Comment/UnLikeComment",
-    "HttpMethod": "PATCH",
-    "IsController": true,
-    "Order": 0,
     "Parameters": [
       {
-        "Name": "commentToUnlike",
-        "Type": "Discusseddto.CommentDtos.LikeCommentDto",
+        "Name": "postReplyDto",
+        "Type": "Discusseddto.CommentDtos.ReplyDtos.PostReplyDto",
         "IsRequired": true
       }
     ],

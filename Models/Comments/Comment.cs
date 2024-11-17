@@ -15,7 +15,7 @@ namespace DiscussedApi.Models.Comments
         public Guid UserId { get; set; }
 
         [Required]
-        public string Context { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
         public int ReplyCount { get; set; }
         public int Likes { get; set; } 
         public DateTime DtCreated { get; set; }

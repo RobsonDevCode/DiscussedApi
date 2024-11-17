@@ -16,6 +16,7 @@ namespace DiscussedApi.Controllers.V1.Topic
         {
             _topicProcessing = topicProcessing;
         }
+
         [Authorize(Roles ="Admin")]
         [HttpGet("GenerateTopic")]
         public async Task<IActionResult> GenerateTopicAsync()

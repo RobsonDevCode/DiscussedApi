@@ -1,9 +1,9 @@
 ﻿using Discusseddto.CommentDtos;
 using FluentValidation;
 
-namespace DiscussedApi.Validations
+namespace DiscussedApi.Validations.Comment
 {
-    public class LikeCommentValidator  : AbstractValidator<LikeCommentDto>
+    public class LikeCommentValidator : AbstractValidator<LikeCommentDto>
     {
         public LikeCommentValidator()
         {

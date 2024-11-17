@@ -1,11 +1,11 @@
 ﻿using Discusseddto.CommentDtos;
 using FluentValidation;
 
-namespace DiscussedApi.Validations
+namespace DiscussedApi.Validations.Comment
 {
     public class CreateCommentRequestValidator : AbstractValidator<NewCommentDto>
     {
-        public CreateCommentRequestValidator() 
+        public CreateCommentRequestValidator()
         {
             RuleFor(x => x.Content).Length(1, 250).WithMessage("Comment has to be atleast 1 character long and a Max of 250");
             RuleFor(x => x.Content).NotEmpty().WithMessage("Comment content cannot be null");

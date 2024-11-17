@@ -40,16 +40,16 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// GetComments: Get Comments based on user prefernce 
         /// </summary>
         /// <param name="userId">User we're getting comments for</param>
-        /// <param name="cancellationToken">Handle cancel requests</param>
+        /// <param name="ctx">Handle cancel requests</param>
         /// <returns>List of comments unqiue to the user</returns>
         [Authorize]
         [HttpGet("GetTodaysComments")]
-        public async Task<IActionResult> GetComments(Guid userId, string topicName, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetComments(Guid userId, string topicName, CancellationToken ctx)
         {
 
             try
             {
-                var result = await _commentProcessing.GetCommentsAsync(userId, topicName, cancellationToken);
+                var result = await _commentProcessing.GetCommentsAsync(userId, topicName, ctx);
 
                 if (result.Count() == 0)
                     throw new Exception("User id given returned no comment content");
@@ -68,15 +68,15 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <summary>
         /// GetCommentsWihoutSignIn: Load Comments for user's who havent signed in
         /// </summary>
-        /// <param name="cancellationToken"></param>
+        /// <param name="ctx"></param>
         /// <param name="topic"></param>
         /// <returns>Status code and a list of comments </returns>
         [HttpGet("GetCommentsNoSignIn")]
-        public async Task<IActionResult> GetCommentsWihoutSignIn(CancellationToken cancellationToken, string topic)
+        public async Task<IActionResult> GetCommentsWihoutSignIn(CancellationToken ctx, string topic)
         {
             try
             {
-                return Ok(await _commentProcessing.GetCommentsWithNoSignInAsync(cancellationToken, topic));
+                return Ok(await _commentProcessing.GetCommentsWithNoSignInAsync(ctx, topic));
             }
             catch (Exception ex)
             {
@@ -91,12 +91,12 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// PostCommentAsync: Http post handler used to post comments to the database 
         /// </summary>
         /// <param name="postComment">Comment To Post</param>
-        /// <param name="cancellationToken">Ctx used to cancel request</param>
+        /// <param name="ctx">Ctx used to cancel request</param>
         /// <param name="validator">Validation on the new comment to see if the comment fits requirements</param>
         /// <returns>Status Code</returns>
         [Authorize]
         [HttpPost("PostComment")]
-        public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment,CancellationToken cancellationToken, 
+        public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment,CancellationToken ctx, 
             [FromServices] IValidator<NewCommentDto> validator)
         {
             //validate request
@@ -113,7 +113,7 @@ namespace DiscussedApi.Controllers.V1.Comments
                     return BadRequest("Error trying to post comment with User id that doesnt exist");
                }
 
-                await _commentProcessing.PostCommentAsync(postComment, cancellationToken);
+                await _commentProcessing.PostCommentAsync(postComment, ctx);
 
                 return Ok();
             }
@@ -134,7 +134,8 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <returns>Updated Comment</returns>
         [Authorize]
         [HttpPatch("EditLikesOnCommentAsync")]
-        public async Task<IActionResult> EditLikesOnCommentAsync([FromBody] LikeCommentDto commentToEdit, [FromServices] IValidator<LikeCommentDto> validator)
+        public async Task<IActionResult> EditLikesOnCommentAsync([FromBody] LikeCommentDto commentToEdit, 
+                                                                 [FromServices] IValidator<LikeCommentDto> validator)
         {
             //validate request
             var validate = await Validator<LikeCommentDto>.ValidationAsync(commentToEdit, validator);
@@ -167,12 +168,26 @@ namespace DiscussedApi.Controllers.V1.Comments
 
         [Authorize]
         [HttpPatch("EditCommentContext")]
-        public async Task<IActionResult> EditCommentContextAsync([FromBody] UpdateCommentDto updateComment, IValidator<UpdateCommentDto> validator, CancellationToken cancellationToken)
+        public async Task<IActionResult> EditCommentContextAsync([FromBody] UpdateCommentDto updateComment, 
+                                                                 IValidator<UpdateCommentDto> validator, 
+                                                                 CancellationToken ctx)
         {
             try
             {
-                //TODO Start EditCommentContextAsync
-                throw new NotImplementedException();
+                var validate = await Validator<UpdateCommentDto>.ValidationAsync(updateComment, validator);
+
+                if (validate.FaliedValidation != null)
+                    return ValidationProblem(validate.FaliedValidation);
+
+                Comment updatedComment = await _commentProcessing.EditCommentContentAsync(updateComment, ctx);
+
+                if (updatedComment == null)
+                {
+                    _logger.Info($"Comment returned null when updating {updateComment.CommentId}");
+                    return NoContent();
+                }
+
+                return Ok(updatedComment);
             }
             catch (Exception ex)
             {
@@ -188,15 +203,15 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// DeleteComment: Deletes a comment based on comment Id
         /// </summary>
         /// <param name="commentId">Comment id used for deletion</param>
-        /// <param name="cancellationToken">Handles canceled requests</param>
+        /// <param name="ctx">Handles canceled requests</param>
         /// <returns>Status code</returns>
         [Authorize]
         [HttpDelete("DeleteComment")]
-        public async Task<IActionResult> DeleteComment([Required(ErrorMessage = "Comment Id is required when attempting to delete")] Guid commentId, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteComment([Required(ErrorMessage = "Comment Id is required when attempting to delete")] Guid commentId, CancellationToken ctx)
         {
             try
             {
-                await _commentProcessing.DeleteCommentAsync(commentId, cancellationToken);
+                await _commentProcessing.DeleteCommentAsync(commentId, ctx);
 
                 return Ok();
             } 

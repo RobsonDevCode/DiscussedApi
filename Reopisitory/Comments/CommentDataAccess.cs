@@ -19,7 +19,8 @@ namespace DiscussedApi.Reopisitory.Comments
         {
 
         }
-       
+        // ******** GET Commands ******** 
+
         public async Task<List<Comment>> GetCommentsForNewUserAsync(Guid? userId, string topic)
         {
             if(userId == null)
@@ -42,6 +43,31 @@ namespace DiscussedApi.Reopisitory.Comments
                 }
 
                 return getTop50Liked;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
+        public async Task<List<Comment>> GetCommentsPostedByFollowing(Guid? userId, string topic, CancellationToken ctx)
+        {
+            if (userId == null)
+                throw new ArgumentNullException("User id cannot be null when getting comments");
+
+            try
+            {
+                var yesterday = DateTime.UtcNow.Date.AddDays(-1);
+
+                using (var commentDb = new CommentsDBContext())
+                {
+                    return await commentDb.Comments
+                                                 .Where(c => c.UserId == userId
+                                                        && c.DtCreated >= yesterday
+                                                        && c.TopicId.ToLower() == topic.ToLower())
+                                                 .Take(Settings.CommentMax)
+                                                 .ToListAsync(ctx);
+                }
             }
             catch (Exception ex)
             {
@@ -74,33 +100,6 @@ namespace DiscussedApi.Reopisitory.Comments
             }
 
         }
-
-        public async Task PostCommentAsync(Comment comment, CancellationToken cancellationToken)
-        {
-
-            try
-            {
-                using (var commentsDb = new CommentsDBContext())
-                {
-                    var add = await commentsDb.Comments.AddAsync(comment, cancellationToken);
-
-                    if (await commentsDb.SaveChangesAsync(cancellationToken) == 0)
-                        throw new Exception("Query Excecuted but no rows were affected");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
-        }
-
-        public Task<Dictionary<Comment, List<Reply>>> UpdateComment(User user, Comment comment)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<bool> IsCommentValid(Guid? commentId)
         {
             if (commentId == null)
@@ -112,10 +111,10 @@ namespace DiscussedApi.Reopisitory.Comments
 
                 using (var commentsDb = new CommentsDBContext())
                 {
-                     result = await commentsDb.Comments.CountAsync(x => x.Id.Equals(commentId));
+                    result = await commentsDb.Comments.CountAsync(x => x.Id.Equals(commentId));
 
                 }
-                 if (result > 0) return true;
+                if (result > 0) return true;
 
                 return false;
             }
@@ -126,6 +125,30 @@ namespace DiscussedApi.Reopisitory.Comments
             }
         }
 
+
+        //******** Post Commands ********
+        public async Task PostCommentAsync(Comment comment, CancellationToken ctx)
+        {
+
+            try
+            {
+                using (var commentsDb = new CommentsDBContext())
+                {
+                    var add = await commentsDb.Comments.AddAsync(comment, ctx);
+
+                    if (await commentsDb.SaveChangesAsync(ctx) == 0)
+                        throw new Exception("Query Excecuted but no rows were affected");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
+
+        //******** Update Commands ********
         public async Task<Comment> UpdateCommentLikesAsync(LikeCommentDto comment)
         {
            
@@ -163,34 +186,45 @@ namespace DiscussedApi.Reopisitory.Comments
             }
         }
 
-
-        public async Task<List<Comment>> GetCommentsPostedByFollowing(Guid? userId, string topic, CancellationToken cancellationToken)
+        public async Task<Comment> UpdateCommentContentAsync(UpdateCommentDto comment, CancellationToken ctx)
         {
-            if(userId == null)
-                throw new ArgumentNullException("User id cannot be null when getting comments");
-
             try
             {
-                var yesterday = DateTime.UtcNow.Date.AddDays(-1);
+                if (string.IsNullOrEmpty(comment.Content))
+                    throw new ArgumentNullException("New content is null when attempting to edit content");
 
-                using (var commentDb = new CommentsDBContext())
+                //check if user trying to delete the request is the user who posted it
+                if (!await validateUserPostedComment(comment.UserId, comment.CommentId, ctx))
+                    throw new Exception("User trying to edit comment did not post it!");
+
+                using (CommentsDBContext commentsDBContext = new())
                 {
-                    return await commentDb.Comments
-                                                 .Where(c => c.UserId == userId
-                                                        && c.DtCreated >= yesterday
-                                                        && c.TopicId.ToLower() == topic.ToLower())
-                                                 .Take(Settings.CommentMax)
-                                                 .ToListAsync(cancellationToken);
+                    var request = await commentsDBContext.Comments
+                                        .FirstOrDefaultAsync(x => x.Id.Equals(comment.CommentId) && x.UserId.Equals(comment.UserId));
+
+                    if(request == null)
+                        throw new Exception($"Error while attempting to update content on comment {comment.CommentId}");
+                
+                     request.Content = comment.Content;
+
+                    var result = await commentsDBContext.SaveChangesAsync();
+
+                    if(result == 0)
+                        throw new Exception("Query was succesfully sent to database but no change in result");
+
+                    return request;
                 }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 _logger.Error(ex, ex.Message);
-                 throw;
+                throw;
             }
+            throw new NotImplementedException();
         }
 
-        public async Task DeleteCommentAsyncEndpoint(Guid commentId, CancellationToken cancellationToken)
+        //******** Delete Commands ********
+        public async Task DeleteCommentAsyncEndpoint(Guid commentId, CancellationToken ctx)
         {
             try
             {
@@ -199,7 +233,7 @@ namespace DiscussedApi.Reopisitory.Comments
 
                    var result = await commentsDB.Comments
                                            .Where(x => x.Id.Equals(commentId))
-                                           .ExecuteDeleteAsync(cancellationToken);
+                                           .ExecuteDeleteAsync(ctx);
 
                     //Already in trouble at this point, but atleast we flag and it's now got our attention
                     if (result > 0)
@@ -219,6 +253,25 @@ namespace DiscussedApi.Reopisitory.Comments
             throw new NotImplementedException();
         }
 
-       
+        //******** private Commands ********
+        private async Task<bool> validateUserPostedComment(Guid userId, Guid commentId, CancellationToken ctx)
+        {
+            try
+            {
+                using (CommentsDBContext commentsDBContext = new())
+                {
+                    return (await commentsDBContext.Comments
+                                                    .Where(x => x.Id.Equals(userId) && x.UserId.Equals(userId))
+                                                    .CountAsync(ctx) == 1) ? true : false;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error (ex, ex.Message);
+                throw;
+            }
+        }
+
     }
 }

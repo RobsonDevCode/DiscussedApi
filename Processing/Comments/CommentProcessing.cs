@@ -38,25 +38,9 @@ namespace DiscussedApi.Processing.Comments
             _topicDataAccess = topicDataAccess;
         }
 
-        public async Task DeleteCommentAsync(Guid commentId, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (!await _commentDataAccess.IsCommentValid(commentId))
-                    throw new KeyNotFoundException("Comment not found or has been deleted already");
+       
 
-                 await _commentDataAccess.DeleteCommentAsyncEndpoint(commentId, cancellationToken);
-
-                _logger.Info($"Comment {commentId} has been deleted");
-            }
-            catch (Exception ex) 
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
-        }
-
-        public async Task<List<Comment>> GetCommentsAsync(Guid userId,string topic, CancellationToken cancellationToken)
+        public async Task<List<Comment>> GetCommentsAsync(Guid userId,string topic, CancellationToken ctx)
         {
             try
             {
@@ -72,7 +56,7 @@ namespace DiscussedApi.Processing.Comments
 
 
                 //get comments from user following who's posted
-                var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, topic ,cancellationToken);
+                var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, topic ,ctx);
 
                 if (commentsFromFollowed == null) throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
 
@@ -90,7 +74,7 @@ namespace DiscussedApi.Processing.Comments
             throw new NotImplementedException();
         }
 
-        public async Task<ImmutableList<Comment>> GetCommentsWithNoSignInAsync(CancellationToken cancellationToken, string topic)
+        public async Task<ImmutableList<Comment>> GetCommentsWithNoSignInAsync(CancellationToken ctx, string topic)
         {
             try
             {
@@ -104,23 +88,9 @@ namespace DiscussedApi.Processing.Comments
             }
         }
 
-        public async Task<Comment> LikeOrDislikeCommentAsync(LikeCommentDto commentToEditDto)
-        {
-            try
-            {
-                if (!await _commentDataAccess.IsCommentValid(commentToEditDto.CommentId)) 
-                    throw new KeyNotFoundException("Comment not found or has been deleted");
 
-                return await _commentDataAccess.UpdateCommentLikesAsync(commentToEditDto);
-            }
-            catch (Exception ex) 
-            {
-              _logger.Error(ex, ex.Message);
-               throw;
-            }
-        }
 
-        public async Task PostCommentAsync(NewCommentDto newComment, CancellationToken cancellationToken)
+        public async Task PostCommentAsync(NewCommentDto newComment, CancellationToken ctx)
         {
 
             if (newComment == null)
@@ -136,14 +106,14 @@ namespace DiscussedApi.Processing.Comments
                     Id = newComment.Id,
                     TopicId = newComment.TopicId,
                     UserId = newComment.UserId,
-                    Context = newComment.Content,
+                    Content = newComment.Content,
                     ReplyCount = 0,
                     Likes = 0,
                     DtCreated = DateTime.UtcNow,
                     DtUpdated = DateTime.UtcNow,
                 };
 
-                await _commentDataAccess.PostCommentAsync(comment, cancellationToken);
+                await _commentDataAccess.PostCommentAsync(comment, ctx);
             }
             catch (Exception ex) 
             {
@@ -153,7 +123,59 @@ namespace DiscussedApi.Processing.Comments
 
         }
 
-      
+        public async Task<Comment> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx)
+        {
+            try
+            {
+                if (!await _commentDataAccess.IsCommentValid(updateComment.CommentId))
+                    throw new KeyNotFoundException("Comment not found or has been deleted");
+
+                 //check if user exists
+                 User user = await _userManager.FindByIdAsync(updateComment.UserId.ToString()) ??
+                          throw new KeyNotFoundException("User who posted comment could not be found or has deleted there account");
+
+
+                return await _commentDataAccess.UpdateCommentContentAsync(updateComment, ctx);
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
+        public async Task<Comment> LikeOrDislikeCommentAsync(LikeCommentDto commentToEditDto)
+        {
+            try
+            {
+                if (!await _commentDataAccess.IsCommentValid(commentToEditDto.CommentId))
+                    throw new KeyNotFoundException("Comment not found or has been deleted");
+
+                return await _commentDataAccess.UpdateCommentLikesAsync(commentToEditDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
+        public async Task DeleteCommentAsync(Guid commentId, CancellationToken ctx)
+        {
+            try
+            {
+                if (!await _commentDataAccess.IsCommentValid(commentId))
+                    throw new KeyNotFoundException("Comment not found or has been deleted already");
+
+                await _commentDataAccess.DeleteCommentAsyncEndpoint(commentId, ctx);
+
+                _logger.Info($"Comment {commentId} has been deleted");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
+
 
         private async Task<bool> isNewUser(Guid? userId)
         {
@@ -171,5 +193,7 @@ namespace DiscussedApi.Processing.Comments
                 throw;
             }
         }
+
+        
     }
 }

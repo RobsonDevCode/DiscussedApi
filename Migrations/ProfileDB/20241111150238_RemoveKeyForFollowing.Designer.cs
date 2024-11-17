@@ -4,6 +4,7 @@ using DiscussedApi.Data.Profiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiscussedApi.Migrations.ProfileDB
 {
     [DbContext(typeof(ProfileDBContext))]
-    partial class ProfileDBContextModelSnapshot : ModelSnapshot
+    [Migration("20241111150238_RemoveKeyForFollowing")]
+    partial class RemoveKeyForFollowing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,12 +48,6 @@ namespace DiscussedApi.Migrations.ProfileDB
 
             modelBuilder.Entity("DiscussedApi.Models.Profiles.Following", b =>
                 {
-                    b.Property<long>("FollowRef")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("FollowRef"));
-
                     b.Property<bool?>("IsFollowing")
                         .HasColumnType("tinyint(1)");
 
@@ -63,8 +60,6 @@ namespace DiscussedApi.Migrations.ProfileDB
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.HasKey("FollowRef");
 
                     b.ToTable("Following");
                 });
