@@ -11,6 +11,7 @@ using Discusseddto.Comment;
 using Discusseddto.CommentDtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using MimeKit.Cryptography;
 using NLog;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace DiscussedApi.Processing.Comments
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         public CommentProcessing(ICommentDataAccess commentDataAccess, IProfileDataAccess profileDataAccess, 
                                 UserManager<User> userManager, IProcessCommentsConcurrently processCommentsConcurrently,
-                                ITopicDataAccess topicDataAccess)
+                                ITopicDataAccess topicDataAccess, IMemoryCache memoryCache)
         {
              _commentDataAccess = commentDataAccess;
             _profileDataAccess = profileDataAccess;
@@ -71,7 +72,6 @@ namespace DiscussedApi.Processing.Comments
                 throw;
             }
 
-            throw new NotImplementedException();
         }
 
         public async Task<ImmutableList<Comment>> GetCommentsWithNoSignInAsync(CancellationToken ctx, string topic)

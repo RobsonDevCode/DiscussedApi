@@ -1,5 +1,21 @@
 [
   {
+    "ContainingType": "DiscussedApi.Controllers.V1.Reply.ReplyController",
+    "Method": "PostResultAsync",
+    "RelativePath": "api/Reply/PostReply",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "postReplyDto",
+        "Type": "Discusseddto.CommentDtos.ReplyDtos.PostReplyDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DiscussedApi.Controllers.V1.Topic.TopicController",
     "Method": "GenerateTopicAsync",
     "RelativePath": "api/Topic/GenerateTopic",
@@ -21,6 +37,22 @@
         "Name": "commentId",
         "Type": "System.Guid",
         "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "EditCommentContextAsync",
+    "RelativePath": "V1/Comment/EditCommentContext",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "updateComment",
+        "Type": "Discusseddto.CommentDtos.UpdateCommentDto",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -89,22 +121,6 @@
       {
         "Name": "postComment",
         "Type": "Discusseddto.CommentDtos.NewCommentDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
-    "Method": "PostReplyToCommentAsync",
-    "RelativePath": "V1/Comment/PostReplyToComment",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "postReplyDto",
-        "Type": "Discusseddto.CommentDtos.ReplyDtos.PostReplyDto",
         "IsRequired": true
       }
     ],

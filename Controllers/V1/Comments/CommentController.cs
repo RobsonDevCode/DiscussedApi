@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using NLog;
 using System.ComponentModel.DataAnnotations;
@@ -27,11 +29,15 @@ namespace DiscussedApi.Controllers.V1.Comments
         private NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         private readonly UserManager<User> _userManager;
         private readonly ICommentProcessing _commentProcessing;
+        private readonly IMemoryCache _memoryCache;
 
-        public CommentController(ICommentProcessing commentProcessing, UserManager<User> userManager)
+        const string cacheKeyForNoSignIn = "get-comments-wihout-sign-in"; //generic key used to cache no sign in comments so performance is still good
+        public CommentController(ICommentProcessing commentProcessing, UserManager<User> userManager, IMemoryCache memoryCache)
         {
-             _commentProcessing = commentProcessing;
+            _commentProcessing = commentProcessing;
             _userManager = userManager;
+            _memoryCache = memoryCache;
+
         }
 
 
@@ -42,17 +48,25 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <param name="userId">User we're getting comments for</param>
         /// <param name="ctx">Handle cancel requests</param>
         /// <returns>List of comments unqiue to the user</returns>
-        [Authorize]
         [HttpGet("GetTodaysComments")]
         public async Task<IActionResult> GetComments(Guid userId, string topicName, CancellationToken ctx)
         {
-
             try
             {
-                var result = await _commentProcessing.GetCommentsAsync(userId, topicName, ctx);
+                string key = $"{userId}-get-comment";
 
-                if (result.Count() == 0)
-                    throw new Exception("User id given returned no comment content");
+                var result = await _memoryCache.GetOrCreateAsync(key,
+                                    async entry =>
+                                    {
+                                        entry.SetOptions(Caching.SetCommentCacheSettings());
+                                        return await _commentProcessing.GetCommentsAsync(userId, topicName, ctx);
+                                    });
+
+                if (result == null)
+                    throw new Exception($"Null was returned taking {userId} as an argument");
+
+                if (result.Count == 0)
+                    throw new Exception($"Comments returned empty when taking {userId} as an argument");
 
                 return Ok(result);
             }
@@ -76,7 +90,14 @@ namespace DiscussedApi.Controllers.V1.Comments
         {
             try
             {
-                return Ok(await _commentProcessing.GetCommentsWithNoSignInAsync(ctx, topic));
+                var result = await _memoryCache.GetOrCreateAsync(cacheKeyForNoSignIn,
+                    async entry =>
+                    {
+                        entry.SetOptions(Caching.SetCommentCacheSettings());
+                        return await _commentProcessing.GetCommentsWithNoSignInAsync(ctx, topic);
+                    });
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -96,28 +117,28 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <returns>Status Code</returns>
         [Authorize]
         [HttpPost("PostComment")]
-        public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment,CancellationToken ctx, 
+        public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment, CancellationToken ctx,
             [FromServices] IValidator<NewCommentDto> validator)
         {
             //validate request
             var validate = await Validator<NewCommentDto>.ValidationAsync(postComment, validator);
 
-            if(validate.FaliedValidation != null) return ValidationProblem(validate.FaliedValidation);
+            if (validate.FaliedValidation != null) return ValidationProblem(validate.FaliedValidation);
 
             try
             {
-               //validate is user calling is an active account, this slows system down but its an extra saftey net 
-               if(await _userManager.FindByIdAsync(postComment.UserId.ToString()) == null)
-               {
+                //validate is user calling is an active account, this slows system down but its an extra saftey net 
+                if (await _userManager.FindByIdAsync(postComment.UserId.ToString()) == null)
+                {
                     _logger.Error("Error trying to post comment with User id that doesnt exist");
                     return BadRequest("Error trying to post comment with User id that doesnt exist");
-               }
+                }
 
                 await _commentProcessing.PostCommentAsync(postComment, ctx);
 
                 return Ok();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, ex.Message);
                 return StatusCode(500, ex.Message);
@@ -134,7 +155,7 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <returns>Updated Comment</returns>
         [Authorize]
         [HttpPatch("EditLikesOnCommentAsync")]
-        public async Task<IActionResult> EditLikesOnCommentAsync([FromBody] LikeCommentDto commentToEdit, 
+        public async Task<IActionResult> EditLikesOnCommentAsync([FromBody] LikeCommentDto commentToEdit,
                                                                  [FromServices] IValidator<LikeCommentDto> validator)
         {
             //validate request
@@ -158,9 +179,9 @@ namespace DiscussedApi.Controllers.V1.Comments
                 return Ok(comment);
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.Error (ex, ex.Message);
+                _logger.Error(ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
 
@@ -168,8 +189,8 @@ namespace DiscussedApi.Controllers.V1.Comments
 
         [Authorize]
         [HttpPatch("EditCommentContext")]
-        public async Task<IActionResult> EditCommentContextAsync([FromBody] UpdateCommentDto updateComment, 
-                                                                 IValidator<UpdateCommentDto> validator, 
+        public async Task<IActionResult> EditCommentContextAsync([FromBody] UpdateCommentDto updateComment,
+                                                                 IValidator<UpdateCommentDto> validator,
                                                                  CancellationToken ctx)
         {
             try
@@ -214,15 +235,15 @@ namespace DiscussedApi.Controllers.V1.Comments
                 await _commentProcessing.DeleteCommentAsync(commentId, ctx);
 
                 return Ok();
-            } 
-            catch(Exception ex) 
+            }
+            catch (Exception ex)
             {
                 _logger.Error(ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
 
-       
+
 
 
     }

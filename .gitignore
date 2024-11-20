@@ -5,3 +5,6 @@ bin/Debug/net8.0/appsettings.json
 *.json
 *.dll
 *.dll
+bin/Debug/net8.0/DiscussedApi.exe
+bin/Debug/net8.0/Discusseddto.dll
+/obj/Debug

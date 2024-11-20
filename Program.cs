@@ -138,6 +138,8 @@ builder.Services.AddTransient<IProcessCommentsConcurrently,  ProcessCommentsConc
 builder.Services.AddTransient<ITopicProcessing, TopicProcessing>();
 builder.Services.AddTransient<ITopicDataAccess, TopicDataAccess>();
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
+builder.Services.AddMemoryCache();
+
 
 var app = builder.Build();
 

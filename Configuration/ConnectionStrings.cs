@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+
 namespace DiscussedApi.Configuration
 {
     internal class ConnectionStrings

@@ -23,7 +23,7 @@ namespace DiscussedApi.Reopisitory.Comments
 
         public async Task<List<Comment>> GetCommentsForNewUserAsync(Guid? userId, string topic)
         {
-            if(userId == null)
+            if (userId == null)
                 throw new ArgumentNullException($"{nameof(userId)} cannot be null");
 
             try
@@ -31,12 +31,12 @@ namespace DiscussedApi.Reopisitory.Comments
                 List<Comment> getTop50Liked = new List<Comment>();
                 using (var commentDb = new CommentsDBContext())
                 {
-                     getTop50Liked = await commentDb.Comments
-                                               .Where(c => c.TopicId.ToLower() == topic.ToLower())
-                                               .OrderByDescending(x => x.DtCreated)
-                                               .ThenByDescending(x => x.Likes)
-                                               .Take(50)
-                                               .ToListAsync();
+                    getTop50Liked = await commentDb.Comments
+                                              .Where(c => c.TopicId.ToLower() == topic.ToLower())
+                                              .OrderByDescending(x => x.DtCreated)
+                                              .ThenByDescending(x => x.Likes)
+                                              .Take(50)
+                                              .ToListAsync();
 
                     if (getTop50Liked.Count() == 0) throw new Exception("No Comments return when retriving commments for new user");
 
@@ -81,19 +81,19 @@ namespace DiscussedApi.Reopisitory.Comments
             {
                 using (var commentDb = new CommentsDBContext())
                 {
-                     var comments = await commentDb.Comments
-                                                   .Where(s => s.TopicId == topic)
-                                                   .OrderByDescending (x => x.DtCreated)
-                                                   .ThenByDescending (x => x.Likes)
-                                                   .Take(100)
-                                                   .ToListAsync();
+                    var comments = await commentDb.Comments
+                                                  .Where(s => s.TopicId == topic)
+                                                  .OrderByDescending(x => x.DtCreated)
+                                                  .ThenByDescending(x => x.Likes)
+                                                  .Take(100)
+                                                  .ToListAsync();
 
-                    if (comments.Count() == 0) throw new Exception("No Comments return when retriving commments");    
-                    
+                    if (comments.Count() == 0) throw new Exception("No Comments return when retriving commments");
+
                     return comments.ToImmutableList();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, ex.Message);
                 throw;
@@ -114,9 +114,8 @@ namespace DiscussedApi.Reopisitory.Comments
                     result = await commentsDb.Comments.CountAsync(x => x.Id.Equals(commentId));
 
                 }
-                if (result > 0) return true;
 
-                return false;
+                return (result > 0) ? true : false;
             }
             catch (Exception ex)
             {
@@ -151,8 +150,8 @@ namespace DiscussedApi.Reopisitory.Comments
         //******** Update Commands ********
         public async Task<Comment> UpdateCommentLikesAsync(LikeCommentDto comment)
         {
-           
-            if (comment == null) 
+
+            if (comment == null)
                 throw new ArgumentNullException("Error when updating like count, Comment is null");
 
             try
@@ -161,15 +160,15 @@ namespace DiscussedApi.Reopisitory.Comments
 
                 using (var commentDb = new CommentsDBContext())
                 {
-                     request = await commentDb.Comments
-                                        .FirstOrDefaultAsync(c => c.Id.Equals(comment.CommentId));
+                    request = await commentDb.Comments
+                                       .FirstOrDefaultAsync(c => c.Id.Equals(comment.CommentId));
 
                     if (request == null)
                         throw new Exception($"Error while attempting to update likes on comment {comment.CommentId}");
 
-                    
 
-                    if(comment.Like) request.Likes++;
+
+                    if (comment.Like) request.Likes++;
                     else request.Likes--;
 
                     var result = await commentDb.SaveChangesAsync();
@@ -202,20 +201,20 @@ namespace DiscussedApi.Reopisitory.Comments
                     var request = await commentsDBContext.Comments
                                         .FirstOrDefaultAsync(x => x.Id.Equals(comment.CommentId) && x.UserId.Equals(comment.UserId));
 
-                    if(request == null)
+                    if (request == null)
                         throw new Exception($"Error while attempting to update content on comment {comment.CommentId}");
-                
-                     request.Content = comment.Content;
+
+                    request.Content = comment.Content;
 
                     var result = await commentsDBContext.SaveChangesAsync();
 
-                    if(result == 0)
+                    if (result == 0)
                         throw new Exception("Query was succesfully sent to database but no change in result");
 
                     return request;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex, ex.Message);
                 throw;
@@ -231,9 +230,9 @@ namespace DiscussedApi.Reopisitory.Comments
                 using (CommentsDBContext commentsDB = new())
                 {
 
-                   var result = await commentsDB.Comments
-                                           .Where(x => x.Id.Equals(commentId))
-                                           .ExecuteDeleteAsync(ctx);
+                    var result = await commentsDB.Comments
+                                            .Where(x => x.Id.Equals(commentId))
+                                            .ExecuteDeleteAsync(ctx);
 
                     //Already in trouble at this point, but atleast we flag and it's now got our attention
                     if (result > 0)
@@ -245,12 +244,11 @@ namespace DiscussedApi.Reopisitory.Comments
 
 
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 _logger.Error(ex, ex.Message);
                 throw;
             }
-            throw new NotImplementedException();
         }
 
         //******** private Commands ********
@@ -268,7 +266,7 @@ namespace DiscussedApi.Reopisitory.Comments
             }
             catch (Exception ex)
             {
-                _logger.Error (ex, ex.Message);
+                _logger.Error(ex, ex.Message);
                 throw;
             }
         }
