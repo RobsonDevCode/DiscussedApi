@@ -24,7 +24,7 @@ namespace DiscussedApi.Data.UserComments
             }
         }
         public DbSet<Comment> Comments { get; set; }
-        public DbSet<Reply> Replys { get; set; }
+        public DbSet<Reply> Replies { get; set; }
        
     }
 }

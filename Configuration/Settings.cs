@@ -19,6 +19,7 @@ namespace DiscussedApi.Configuration
         public static EmailSettings EmailSettings => new EmailSettings(_config);
         public static IdentitySettings  IdentitySettings => new IdentitySettings(_config);
 
+        public static Encryption Encryption => new Encryption(_config);
         //workers for updating following and follower for when a follow request is made
         public static int FollowerTasks = 2;
 
@@ -28,6 +29,8 @@ namespace DiscussedApi.Configuration
         public static int CommentMax = 100;
 
         public static DateOnly DateToGetTopic = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        public static DateTime TimeToGetCommentFrom = DateTime.UtcNow.Date.AddDays(-1);
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DiscussedApi.Common.Validations;
+using DiscussedApi.Extentions;
 using DiscussedApi.Models;
 using DiscussedApi.Models.Comments;
 using DiscussedApi.Models.UserInfo;
@@ -19,6 +20,7 @@ using Newtonsoft.Json;
 using NLog;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace DiscussedApi.Controllers.V1.Comments
 {
@@ -31,7 +33,7 @@ namespace DiscussedApi.Controllers.V1.Comments
         private readonly ICommentProcessing _commentProcessing;
         private readonly IMemoryCache _memoryCache;
 
-        const string cacheKeyForNoSignIn = "get-comments-wihout-sign-in"; //generic key used to cache no sign in comments so performance is still good
+        const string keyForTopComments = "get-top-comments"; 
         public CommentController(ICommentProcessing commentProcessing, UserManager<User> userManager, IMemoryCache memoryCache)
         {
             _commentProcessing = commentProcessing;
@@ -42,31 +44,71 @@ namespace DiscussedApi.Controllers.V1.Comments
 
 
         // ********** GET COMMANDS **********
+
         /// <summary>
-        /// GetComments: Get Comments based on user prefernce 
+        ///  GetTopComments: Get Comments based on user prefernce 
         /// </summary>
-        /// <param name="userId">User we're getting comments for</param>
-        /// <param name="ctx">Handle cancel requests</param>
-        /// <returns>List of comments unqiue to the user</returns>
-        [HttpGet("GetTodaysComments")]
-        public async Task<IActionResult> GetComments(Guid userId, string topicName, CancellationToken ctx)
+        /// <param name="topicName">Name of the topic we're getting comments from</param>
+        /// <param name="ctx">cancellation token</param>
+        /// <param name="encryptedToken">Next page token</param>
+        /// <returns cref="IActionResult">Http Status Code</returns>
+        /// <exception cref="CryptographicException"></exception>
+        [HttpGet("GetTodaysTopComments")]
+        public async Task<IActionResult> GetTopComments(string topicName, CancellationToken ctx, string? encryptedToken)
         {
             try
             {
-                string key = $"{userId}-get-comment";
+                //for testing to test next token 
+                #if DEBUG
+                 long testRef = 5;
+                    if(!Encryptor.TryEncryptValue(testRef, out string token))
+                     throw new CryptographicException("error while encrypting value, check the Value, Key or Iv");
 
-                var result = await _memoryCache.GetOrCreateAsync(key,
-                                    async entry =>
-                                    {
-                                        entry.SetOptions(Caching.SetCommentCacheSettings());
-                                        return await _commentProcessing.GetCommentsAsync(userId, topicName, ctx);
+                    encryptedToken = token;
+                #endif
+
+                //TODO maybe move out into processing method alot is going on 
+                //check if user has requested more comments
+                if (!string.IsNullOrWhiteSpace(encryptedToken))
+                {
+                   
+                    if (!Encryptor.TryDecrpytToken(encryptedToken, out long? nextPageToken))
+                        throw new CryptographicException("error while decrypting value, check the Value, Key or Iv");
+
+                    if (!nextPageToken.HasValue)
+                        throw new CryptographicException("next page token returned null after attempting decrypting");
+
+                    //load more results
+                    string key = $"top-next-page-{encryptedToken}";
+
+                    var pagedComments = await _memoryCache.GetOrCreateAsync(key,
+                                                                    async entry =>
+                                                                    {
+                                                                        entry.SetOptions(CachingSettings.SetCommentCacheSettings());
+                                                                        return await _commentProcessing.GetTopCommentsAsync(topicName, nextPageToken, ctx);
+                                                                    });
+
+                    if (pagedComments == null)
+                        throw new Exception($"Comments returned empty likely due to a query issue");
+
+                    if (pagedComments.Count == 0)
+                        throw new Exception($"Comments returned empty likely due to a query issue");
+
+                    return Ok(pagedComments);
+                }
+
+                //else get the first page of results
+                var result = await _memoryCache.GetOrCreateAsync(keyForTopComments,
+                                    async entry =>{
+                                        entry.SetOptions(CachingSettings.SetCommentCacheSettings());
+                                        return await _commentProcessing.GetTopCommentsAsync(topicName, ctx);
                                     });
 
                 if (result == null)
-                    throw new Exception($"Null was returned taking {userId} as an argument");
+                    throw new Exception($"Comments returned empty likely due to a query issue");
 
                 if (result.Count == 0)
-                    throw new Exception($"Comments returned empty when taking {userId} as an argument");
+                    throw new Exception($"Comments returned empty likely due to a query issue");
 
                 return Ok(result);
             }
@@ -79,32 +121,57 @@ namespace DiscussedApi.Controllers.V1.Comments
 
         }
 
+        //[HttpGet("Test")]
+        //public IActionResult Test()
+        //{
+        //    var result = Encryptor.GenerateKeyAndIVStrings();
+
+        //    List<string> keys = new List<string>();
+        //    keys.Add(result.key);
+        //    keys.Add(result.iv);
+
+        //    return Ok(keys);
+        //}
+
         /// <summary>
-        /// GetCommentsWihoutSignIn: Load Comments for user's who havent signed in
+        /// GetFollowingComments: Get comments for the following tab,this handler returnes a list of comments from user following.
         /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="topicName"></param>
         /// <param name="ctx"></param>
-        /// <param name="topic"></param>
-        /// <returns>Status code and a list of comments </returns>
-        [HttpGet("GetCommentsNoSignIn")]
-        public async Task<IActionResult> GetCommentsWihoutSignIn(CancellationToken ctx, string topic)
+        /// <returns></returns>
+
+        [Authorize]
+        [HttpGet("GetFollowingCommnets")]
+        public async Task<IActionResult> GetFollowingComments(Guid userId, string topicName, CancellationToken ctx)
         {
             try
             {
-                var result = await _memoryCache.GetOrCreateAsync(cacheKeyForNoSignIn,
-                    async entry =>
-                    {
-                        entry.SetOptions(Caching.SetCommentCacheSettings());
-                        return await _commentProcessing.GetCommentsWithNoSignInAsync(ctx, topic);
+                string key = $"{userId}-get-following-comment";
+
+                //TODO add pagination
+                var result = await _memoryCache.GetOrCreateAsync(key,
+                    async entry =>{
+                        entry.SetOptions(CachingSettings.SetFollowingCommentCacheSetting());
+                        return await _commentProcessing.GetFollowingCommentsAsync(userId, topicName, ctx);
                     });
+
+                if (result == null)
+                    throw new Exception($"Null was returned taking {userId} as an argument");
+
+                if (result.Count == 0)
+                  return NoContent();
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                _logger.Fatal(ex, ex.Message);
+                _logger.Error(ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
+
         }
+
 
         // ********** POST COMMANDS **********
 

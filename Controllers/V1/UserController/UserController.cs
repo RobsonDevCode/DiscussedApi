@@ -59,16 +59,16 @@ namespace DiscussedApi.Controllers.V1.UserController
         public async Task<IActionResult> Register([FromBody] RegisterDto register)
         {
            
-                if (register == null) return BadRequest("Request body sent was null");
+           if (register == null) return BadRequest("Request body sent was null");
 
-                var user = new User
-                {
-                    UserName = register.UserName,
-                    Email = register.EmailAddress
-                };
+           var user = new User
+           {
+               UserName = register.UserName,
+               Email = register.EmailAddress
+           };
 
-                if (string.IsNullOrEmpty(register.Password) || string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
-                    return BadRequest("Invalid Password Or Username/Email");
+           if (string.IsNullOrEmpty(register.Password) || string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
+               return BadRequest("Invalid Password Or Username/Email");
 
             try 
             { 

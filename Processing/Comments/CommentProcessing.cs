@@ -39,29 +39,30 @@ namespace DiscussedApi.Processing.Comments
             _topicDataAccess = topicDataAccess;
         }
 
-       
-
-        public async Task<List<Comment>> GetCommentsAsync(Guid userId,string topic, CancellationToken ctx)
+        public async Task<List<Comment>> GetFollowingCommentsAsync(Guid userId,string topic, CancellationToken ctx)
         {
             try
             {
                 List<Guid?> userFollowing = await _profileDataAccess.GetUserFollowing(userId);
 
                 //if user following is null check if they are a new user and display content based on prompts selected
-                if (userFollowing.Count() == 0 || userFollowing == null)
+                if (userFollowing.Count == 0 || userFollowing == null)
                 {
-                    if (!await isNewUser(userId)) throw new Exception("User follows no accounts");
-
-                    return await _commentDataAccess.GetCommentsForNewUserAsync(userId, topic);
+                    _logger.Info($"User {userId} follows no accounts");
+                    return new List<Comment>();
                 }
-
 
                 //get comments from user following who's posted
                 var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, topic ,ctx);
 
-                if (commentsFromFollowed == null) throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
+                if (commentsFromFollowed == null) 
+                    throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
 
-                if (commentsFromFollowed.Count() == 0) throw new InvalidOperationException("Comments From Followers cannot be empty when user has followers");
+                if (commentsFromFollowed.Count == 0)
+                {
+                    //no comments from following on todays topic
+                    return new List<Comment>();
+                }
 
                 return commentsFromFollowed;
 
@@ -74,12 +75,17 @@ namespace DiscussedApi.Processing.Comments
 
         }
 
-        public async Task<ImmutableList<Comment>> GetCommentsWithNoSignInAsync(CancellationToken ctx, string topic)
+        /// <summary>
+        /// GetTopCommentsAsync: Untokened get request for top comments
+        /// </summary>
+        /// <param name="topic"></param>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public async Task<ImmutableList<Comment>> GetTopCommentsAsync(string topic, CancellationToken ctx)
         {
             try
             {
-                //we dont need to do anything fancy here, a taste of what the app has to offer to get the user intrigued
-                return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic);
+                return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic, ctx);
             }
             catch(Exception ex)
             {
@@ -88,7 +94,25 @@ namespace DiscussedApi.Processing.Comments
             }
         }
 
-
+        /// <summary>
+        /// GetTopCommentsAsync: tokenised paging for load more comments functionality
+        /// </summary>
+        /// <param name="topic"></param>
+        /// <param name="nextPageToken"></param>
+        /// <param name="ctx"></param>
+        /// <returns cref="Comment">List of immutable comments</returns>
+        public async Task<ImmutableList<Comment>> GetTopCommentsAsync(string topic, long? nextPageToken, CancellationToken ctx)
+        {
+            try
+            {
+                return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic, nextPageToken, ctx);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
 
         public async Task PostCommentAsync(NewCommentDto newComment, CancellationToken ctx)
         {
@@ -106,6 +130,7 @@ namespace DiscussedApi.Processing.Comments
                     Id = newComment.Id,
                     TopicId = newComment.TopicId,
                     UserId = newComment.UserId,
+                    UserName = newComment.UserName,
                     Content = newComment.Content,
                     ReplyCount = 0,
                     Likes = 0,
@@ -122,12 +147,11 @@ namespace DiscussedApi.Processing.Comments
             }
 
         }
-
         public async Task<Comment> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx)
         {
             try
             {
-                if (!await _commentDataAccess.IsCommentValid(updateComment.CommentId))
+                if (!await _commentDataAccess.IsCommentValid(updateComment.CommentId, ctx))
                     throw new KeyNotFoundException("Comment not found or has been deleted");
 
                  //check if user exists
@@ -162,7 +186,7 @@ namespace DiscussedApi.Processing.Comments
         {
             try
             {
-                if (!await _commentDataAccess.IsCommentValid(commentId))
+                if (!await _commentDataAccess.IsCommentValid(commentId, ctx))
                     throw new KeyNotFoundException("Comment not found or has been deleted already");
 
                 await _commentDataAccess.DeleteCommentAsyncEndpoint(commentId, ctx);
@@ -175,25 +199,5 @@ namespace DiscussedApi.Processing.Comments
                 throw;
             }
         }
-
-
-        private async Task<bool> isNewUser(Guid? userId)
-        {
-            try
-            {
-                User? user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == userId.ToString() &&
-                                                                         x.CreatedAt < DateTime.UtcNow.AddDays(-(int)DateTime.UtcNow.DayOfWeek - 3));
-                if(user == null) return false;
-
-                return true;
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
-        }
-
-        
     }
 }

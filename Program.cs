@@ -21,10 +21,11 @@ using DiscussedApi.Models.UserInfo;
 using DiscussedApi.Reopisitory.Comments;
 using DiscussedApi.Reopisitory.Profiles;
 using DiscussedApi.Processing.Profile;
-using System.Runtime.InteropServices;
 using DiscussedApi.Processing.Comments.ParallelProcess;
 using DiscussedApi.Processing.Topics;
 using DiscussedApi.Reopisitory.Topics;
+using DiscussedApi.Processing.Replies;
+using DiscussedApi.Reopisitory.Replies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -137,6 +138,9 @@ builder.Services.AddTransient<IProfileProcessing, ProfileProcessing>();
 builder.Services.AddTransient<IProcessCommentsConcurrently,  ProcessCommentsConcurrently>();
 builder.Services.AddTransient<ITopicProcessing, TopicProcessing>();
 builder.Services.AddTransient<ITopicDataAccess, TopicDataAccess>();
+builder.Services.AddTransient<IReplyProcessing, ReplyProcessing>();
+builder.Services.AddTransient<IReplyDataAccess, ReplyDataAccess>();
+
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 builder.Services.AddMemoryCache();
 

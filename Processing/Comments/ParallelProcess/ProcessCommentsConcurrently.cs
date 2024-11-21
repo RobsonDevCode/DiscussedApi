@@ -3,6 +3,7 @@ using DiscussedApi.Models.Comments;
 using DiscussedApi.Reopisitory.Comments;
 using NLog;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 
 namespace DiscussedApi.Processing.Comments.ParallelProcess
 {
@@ -18,14 +19,17 @@ namespace DiscussedApi.Processing.Comments.ParallelProcess
 
         public async Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds, string topic ,CancellationToken ctx)
         {
-            if (!userIds.Any())
+            if (userIds == null)
                 throw new ArgumentException("User ids cannot be null when getting comments");
+
+            if(userIds.Count == 0)
+                return new List<Comment>();
 
             ConcurrentBag<List<Comment>> comments = new ConcurrentBag<List<Comment>>();
 
             try
             {
-                await Parallel.ForAsync(0, userIds.Count(), new ParallelOptions()
+                await Parallel.ForAsync(0, userIds.Count, new ParallelOptions()
                 {
                     CancellationToken = ctx,
                     MaxDegreeOfParallelism = Settings.ParallelWorkers
@@ -45,7 +49,7 @@ namespace DiscussedApi.Processing.Comments.ParallelProcess
                     }
                 });
 
-                if (comments.Count() == 0)
+                if (comments.Count == 0)
                     throw new Exception("No comments returned");
 
                 return comments.SelectMany(x => x)

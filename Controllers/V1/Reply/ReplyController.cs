@@ -29,7 +29,8 @@ namespace DiscussedApi.Controllers.V1.Reply
 
         [Authorize]
         [HttpPost("PostReply")]
-        public async Task<IActionResult> PostResultAsync([FromBody] PostReplyDto postReplyDto,[FromServices] IValidator<PostReplyDto> validator)
+        public async Task<IActionResult> PostResultAsync([FromBody] PostReplyDto postReplyDto,[FromServices] IValidator<PostReplyDto> validator,
+            CancellationToken ctx)
         {
             try
             {
@@ -37,21 +38,47 @@ namespace DiscussedApi.Controllers.V1.Reply
 
                 if (valid.FaliedValidation != null) return ValidationProblem(valid.FaliedValidation);
 
-                if (!await _commentDataAccess.IsCommentValid(postReplyDto.CommentId))
+                if (!await _commentDataAccess.IsCommentValid(postReplyDto.CommentId, ctx))
                     return BadRequest("error while replying to comment, comment cannot be found or has been deleted!");
 
-                await _replyProcessing.PostReplyAsync(postReplyDto);
+                await _replyProcessing.PostReplyAsync(postReplyDto, ctx);
 
                 return Ok();
             }
             catch (Exception ex) 
             {
-                _logger.Error(ex);
+                _logger.Error(ex, ex.Message);
                 return StatusCode(500, ex.Message);
             }
 
         }
 
+        [HttpGet("GetReplies")]
+        public async Task<IActionResult> GetRepliesAsync(Guid commentId, CancellationToken ctx)
+        {
+            try
+            {
+                if(!await _commentDataAccess.IsCommentValid(commentId, ctx))
+                    return BadRequest($"error while getting replies for comment {commentId}, comment cannot be found or has been deleted!");
+
+                //TODO add memeory caching 
+                //TODO add paging
+                var result = await _replyProcessing.GetReplysForCommentAsync(commentId, ctx);
+
+                if (result.Replies.Count == 0)
+                {
+                    _logger.Warn($"No Reply Content for comment {commentId}");
+                    return NoContent();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
         
 
     }

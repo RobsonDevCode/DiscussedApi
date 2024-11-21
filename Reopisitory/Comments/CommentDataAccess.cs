@@ -19,37 +19,8 @@ namespace DiscussedApi.Reopisitory.Comments
         {
 
         }
+
         // ******** GET Commands ******** 
-
-        public async Task<List<Comment>> GetCommentsForNewUserAsync(Guid? userId, string topic)
-        {
-            if (userId == null)
-                throw new ArgumentNullException($"{nameof(userId)} cannot be null");
-
-            try
-            {
-                List<Comment> getTop50Liked = new List<Comment>();
-                using (var commentDb = new CommentsDBContext())
-                {
-                    getTop50Liked = await commentDb.Comments
-                                              .Where(c => c.TopicId.ToLower() == topic.ToLower())
-                                              .OrderByDescending(x => x.DtCreated)
-                                              .ThenByDescending(x => x.Likes)
-                                              .Take(50)
-                                              .ToListAsync();
-
-                    if (getTop50Liked.Count() == 0) throw new Exception("No Comments return when retriving commments for new user");
-
-                }
-
-                return getTop50Liked;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
-        }
         public async Task<List<Comment>> GetCommentsPostedByFollowing(Guid? userId, string topic, CancellationToken ctx)
         {
             if (userId == null)
@@ -57,16 +28,19 @@ namespace DiscussedApi.Reopisitory.Comments
 
             try
             {
-                var yesterday = DateTime.UtcNow.Date.AddDays(-1);
-
                 using (var commentDb = new CommentsDBContext())
                 {
-                    return await commentDb.Comments
+                    var result =  await commentDb.Comments
                                                  .Where(c => c.UserId == userId
-                                                        && c.DtCreated >= yesterday
-                                                        && c.TopicId.ToLower() == topic.ToLower())
+                                                        && c.DtCreated >= Settings.TimeToGetCommentFrom
+                                                        && c.TopicId == topic)
                                                  .Take(Settings.CommentMax)
                                                  .ToListAsync(ctx);
+
+                    if (result == null)
+                        throw new Exception("Null return when retriving commments");
+
+                    return result;
                 }
             }
             catch (Exception ex)
@@ -75,20 +49,21 @@ namespace DiscussedApi.Reopisitory.Comments
                 throw;
             }
         }
-        public async Task<ImmutableList<Comment>> GetTopCommentsForTodaysTopic(string topic)
+        public async Task<ImmutableList<Comment>> GetTopCommentsForTodaysTopic(string topic, CancellationToken ctx)
         {
             try
             {
                 using (var commentDb = new CommentsDBContext())
                 {
                     var comments = await commentDb.Comments
-                                                  .Where(s => s.TopicId == topic)
-                                                  .OrderByDescending(x => x.DtCreated)
-                                                  .ThenByDescending(x => x.Likes)
-                                                  .Take(100)
-                                                  .ToListAsync();
+                                                  .Where(x => x.TopicId == topic)
+                                                  .OrderByDescending(x => x.Interactions) //sum of likes reposts and replys
+                                                  .ThenByDescending(x => x.DtCreated)
+                                                  .Take(Settings.CommentMax)
+                                                  .ToListAsync(ctx);
 
-                    if (comments.Count() == 0) throw new Exception("No Comments return when retriving commments");
+                    if (comments == null)
+                        throw new Exception("Null return when retriving commments");
 
                     return comments.ToImmutableList();
                 }
@@ -99,6 +74,32 @@ namespace DiscussedApi.Reopisitory.Comments
                 throw;
             }
 
+        }
+        public async Task<ImmutableList<Comment>> GetTopCommentsForTodaysTopic(string topic, long? nextPageToken, CancellationToken ctx)
+        {
+            try
+            {
+                using (var connection = new CommentsDBContext())
+                {
+                    var nextPageOfComments = await connection.Comments
+                                                             .Where(x => x.TopicId == topic
+                                                             && x.Refernce > nextPageToken)
+                                                             .OrderByDescending(x => x.Interactions)
+                                                             .ThenByDescending(x => x.DtCreated)
+                                                             .Take(Settings.CommentMax)
+                                                             .ToListAsync(ctx);
+
+                    if (nextPageOfComments == null)
+                        throw new Exception("Null return when retriving commments");
+
+                    return nextPageOfComments.ToImmutableList();
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
         }
         public async Task<bool> IsCommentValid(Guid? commentId)
         {
@@ -113,6 +114,28 @@ namespace DiscussedApi.Reopisitory.Comments
                 {
                     result = await commentsDb.Comments.CountAsync(x => x.Id.Equals(commentId));
 
+                }
+
+                return (result > 0) ? true : false;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, ex.Message);
+                throw;
+            }
+        }
+        public async Task<bool> IsCommentValid(Guid? commentId, CancellationToken ctx)
+        {
+            if (commentId == null)
+                throw new ArgumentNullException("Comment id null when check if valid");
+
+            try
+            {
+                int result = 0;
+
+                using (var commentsDb = new CommentsDBContext())
+                {
+                    result = await commentsDb.Comments.CountAsync(x => x.Id.Equals(commentId), ctx);
                 }
 
                 return (result > 0) ? true : false;
@@ -271,5 +294,6 @@ namespace DiscussedApi.Reopisitory.Comments
             }
         }
 
+       
     }
 }

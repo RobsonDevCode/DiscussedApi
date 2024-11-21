@@ -5,8 +5,8 @@ namespace DiscussedApi.Processing.Replies
 {
     public interface IReplyProcessing
     {
-        Task PostReplyAsync(PostReplyDto postReplyDto);
-        Task<Dictionary<Comment, List<Reply>>> GetReplysForCommentAsync(Guid commentId);
+        Task PostReplyAsync(PostReplyDto postReplyDto, CancellationToken ctx);
+        Task<RepliesWithComment> GetReplysForCommentAsync(Guid commentId, CancellationToken ctx );
         Task DeleteReplyAsync(Guid commentId);
     }
 }

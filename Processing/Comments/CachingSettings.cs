@@ -2,7 +2,7 @@
 
 namespace DiscussedApi.Processing.Comments
 {
-    public static class Caching
+    public static class CachingSettings
     { 
         public static MemoryCacheEntryOptions SetCommentCacheSettings()
         {
@@ -13,5 +13,9 @@ namespace DiscussedApi.Processing.Comments
           
         }
 
+        internal static MemoryCacheEntryOptions SetFollowingCommentCacheSetting()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

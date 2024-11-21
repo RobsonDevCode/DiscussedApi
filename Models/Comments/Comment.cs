@@ -8,14 +8,20 @@ namespace DiscussedApi.Models.Comments
     public class Comment
     {
 
-        [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
+        [Key]
+        public long Refernce { get; set; }
+
         public string TopicId { get; set; } = string.Empty;
         [Required]
         public Guid UserId { get; set; }
 
         [Required]
+        public string UserName { get; set; } = string.Empty;
+
+        [Required]
         public string Content { get; set; } = string.Empty;
+        public long Interactions { get; set; } 
         public int ReplyCount { get; set; }
         public int Likes { get; set; } 
         public DateTime DtCreated { get; set; }

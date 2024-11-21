@@ -8,7 +8,7 @@ namespace DiscussedApi.Models.Comments
         public Guid Id { get; set; }
         [Required]
         public Guid CommentId { get; set; } 
-        public string UserId { get; set; } = string.Empty;
+        public Guid UserId { get; set; } 
         public string UserName { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public int Likes { get; set; }

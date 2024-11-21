@@ -8,11 +8,14 @@ namespace DiscussedApi.Processing.Comments
 {
     public interface ICommentProcessing
     {
-       Task<List<Comment>> GetCommentsAsync(Guid userId, string topicName, CancellationToken ctx);
+       Task<List<Comment>> GetFollowingCommentsAsync(Guid userId, string topicName, CancellationToken ctx);
        Task PostCommentAsync(NewCommentDto comment, CancellationToken ctx);
        Task<Comment> LikeOrDislikeCommentAsync(LikeCommentDto commentToEditDto);
        Task DeleteCommentAsync(Guid commentId, CancellationToken ctx);
-       Task<ImmutableList<Comment>> GetCommentsWithNoSignInAsync(CancellationToken ctx, string topic);
-        Task<Comment> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx);
+       Task<ImmutableList<Comment>> GetTopCommentsAsync(string topic, long? nextPageToken ,CancellationToken ctx);
+       Task<ImmutableList<Comment>> GetTopCommentsAsync(string topic, CancellationToken ctx);
+
+       Task<Comment> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx);
+        
     }
 }

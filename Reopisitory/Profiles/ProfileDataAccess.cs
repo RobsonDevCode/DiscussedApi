@@ -1,4 +1,5 @@
 ﻿using DiscussedApi.Data.Profiles;
+using DiscussedApi.Data.UserComments;
 using DiscussedApi.Models.Profiles;
 using DiscussedApi.Models.UserInfo;
 using Discusseddto.Profile;
@@ -10,6 +11,7 @@ namespace DiscussedApi.Reopisitory.Profiles
     public class ProfileDataAccess : IProfileDataAccess
     {
         ProfileDBContext _profileDBContext = new();
+        CommentsDBContext _commentsDBContext = new CommentsDBContext();
         private readonly NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
 
         public async Task<List<Guid?>> GetUserFollowing(Guid userId)
