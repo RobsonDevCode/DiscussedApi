@@ -4,7 +4,7 @@ namespace DiscussedApi.Processing.Comments
 {
     public static class CachingSettings
     { 
-        public static MemoryCacheEntryOptions SetCommentCacheSettings()
+        internal static MemoryCacheEntryOptions SetCommentCacheSettings()
         {
            return new MemoryCacheEntryOptions()
                                      .SetSlidingExpiration(TimeSpan.FromSeconds(30))
@@ -13,9 +13,6 @@ namespace DiscussedApi.Processing.Comments
           
         }
 
-        internal static MemoryCacheEntryOptions SetFollowingCommentCacheSetting()
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 }

@@ -39,7 +39,7 @@ namespace DiscussedApi.Processing.Comments
             _topicDataAccess = topicDataAccess;
         }
 
-        public async Task<List<Comment>> GetFollowingCommentsAsync(Guid userId,string topic, CancellationToken ctx)
+        public async Task<List<Comment>> GetFollowingCommentsAsync(Guid userId,string topic, long? nextPageToken, CancellationToken ctx)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace DiscussedApi.Processing.Comments
                 }
 
                 //get comments from user following who's posted
-                var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, topic ,ctx);
+                var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, topic, nextPageToken, ctx);
 
                 if (commentsFromFollowed == null) 
                     throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
@@ -75,27 +75,9 @@ namespace DiscussedApi.Processing.Comments
 
         }
 
-        /// <summary>
-        /// GetTopCommentsAsync: Untokened get request for top comments
-        /// </summary>
-        /// <param name="topic"></param>
-        /// <param name="ctx"></param>
-        /// <returns></returns>
-        public async Task<ImmutableList<Comment>> GetTopCommentsAsync(string topic, CancellationToken ctx)
-        {
-            try
-            {
-                return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic, ctx);
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
-        }
 
         /// <summary>
-        /// GetTopCommentsAsync: tokenised paging for load more comments functionality
+        /// GetTopCommentsAsync: tokenised paging for load more comments functionality, if token is null we'll get the first page of comments
         /// </summary>
         /// <param name="topic"></param>
         /// <param name="nextPageToken"></param>
@@ -105,7 +87,7 @@ namespace DiscussedApi.Processing.Comments
         {
             try
             {
-                return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic, nextPageToken, ctx);
+                return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic,nextPageToken, ctx);
             }
             catch (Exception ex)
             {

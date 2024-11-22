@@ -5,6 +5,6 @@ namespace DiscussedApi.Processing.Comments.ParallelProcess
 {
     public interface IProcessCommentsConcurrently
     {
-        Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds,string topic ,CancellationToken ctx);
+        Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds,string topic, long? nextPageToken ,CancellationToken ctx);
     }
 }

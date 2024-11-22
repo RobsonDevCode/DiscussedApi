@@ -17,13 +17,15 @@ namespace DiscussedApi.Processing.Comments.ParallelProcess
             _commentDataAccess = commentDataAccess;
         }
 
-        public async Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds, string topic ,CancellationToken ctx)
+        public async Task<List<Comment>> GetCommentsConcurrently(List<Guid?> userIds, string topic, long? nextPagetoken ,CancellationToken ctx)
         {
             if (userIds == null)
                 throw new ArgumentException("User ids cannot be null when getting comments");
 
             if(userIds.Count == 0)
                 return new List<Comment>();
+
+            
 
             ConcurrentBag<List<Comment>> comments = new ConcurrentBag<List<Comment>>();
 
@@ -39,7 +41,9 @@ namespace DiscussedApi.Processing.Comments.ParallelProcess
                 {
                     try
                     {
-                        var getCommentsByUser = await _commentDataAccess.GetCommentsPostedByFollowing(userIds[i], topic ,ctx);
+                        long notNullToken = nextPagetoken ?? 0; //cast long to a non nullable as it more expensive to concurrently use ternary in query 
+
+                        var getCommentsByUser = await _commentDataAccess.GetCommentsPostedByFollowing(userIds[i], topic, notNullToken, ctx);
                         comments.Add(getCommentsByUser);
                     }
                     catch (Exception ex)

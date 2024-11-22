@@ -33,7 +33,6 @@ namespace DiscussedApi.Controllers.V1.Comments
         private readonly ICommentProcessing _commentProcessing;
         private readonly IMemoryCache _memoryCache;
 
-        const string keyForTopComments = "get-top-comments"; 
         public CommentController(ICommentProcessing commentProcessing, UserManager<User> userManager, IMemoryCache memoryCache)
         {
             _commentProcessing = commentProcessing;
@@ -53,7 +52,7 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <param name="encryptedToken">Next page token</param>
         /// <returns cref="IActionResult">Http Status Code</returns>
         /// <exception cref="CryptographicException"></exception>
-        [HttpGet("GetTodaysTopComments")]
+        [HttpGet("{topicName}/comments")]
         public async Task<IActionResult> GetTopComments(string topicName, CancellationToken ctx, string? encryptedToken)
         {
             try
@@ -62,46 +61,32 @@ namespace DiscussedApi.Controllers.V1.Comments
                 #if DEBUG
                  long testRef = 5;
                     if(!Encryptor.TryEncryptValue(testRef, out string token))
-                     throw new CryptographicException("error while encrypting value, check the Value, Key or Iv");
-
+                    throw new CryptographicException("error while encrypting value, check the Value, Key or Iv");
                     encryptedToken = token;
                 #endif
 
-                //TODO maybe move out into processing method alot is going on 
-                //check if user has requested more comments
+                //set token to null 
+                long? nextPageToken = null;
+
+                string key = "base-comment-key";  
+                //check if encypted next page token is present
                 if (!string.IsNullOrWhiteSpace(encryptedToken))
                 {
-                   
-                    if (!Encryptor.TryDecrpytToken(encryptedToken, out long? nextPageToken))
+                    if (!Encryptor.TryDecrpytToken(encryptedToken, out nextPageToken)) //Decrypt token to get paging refernce 
                         throw new CryptographicException("error while decrypting value, check the Value, Key or Iv");
 
                     if (!nextPageToken.HasValue)
                         throw new CryptographicException("next page token returned null after attempting decrypting");
 
-                    //load more results
-                    string key = $"top-next-page-{encryptedToken}";
-
-                    var pagedComments = await _memoryCache.GetOrCreateAsync(key,
-                                                                    async entry =>
-                                                                    {
-                                                                        entry.SetOptions(CachingSettings.SetCommentCacheSettings());
-                                                                        return await _commentProcessing.GetTopCommentsAsync(topicName, nextPageToken, ctx);
-                                                                    });
-
-                    if (pagedComments == null)
-                        throw new Exception($"Comments returned empty likely due to a query issue");
-
-                    if (pagedComments.Count == 0)
-                        throw new Exception($"Comments returned empty likely due to a query issue");
-
-                    return Ok(pagedComments);
+                    key += $"-{nextPageToken}";// adjust the key so we dont get previous cache 
                 }
 
-                //else get the first page of results
-                var result = await _memoryCache.GetOrCreateAsync(keyForTopComments,
+
+                //cache comment data 
+                var result = await _memoryCache.GetOrCreateAsync(key,
                                     async entry =>{
                                         entry.SetOptions(CachingSettings.SetCommentCacheSettings());
-                                        return await _commentProcessing.GetTopCommentsAsync(topicName, ctx);
+                                        return await _commentProcessing.GetTopCommentsAsync(topicName, nextPageToken, ctx);
                                     });
 
                 if (result == null)
@@ -121,18 +106,6 @@ namespace DiscussedApi.Controllers.V1.Comments
 
         }
 
-        //[HttpGet("Test")]
-        //public IActionResult Test()
-        //{
-        //    var result = Encryptor.GenerateKeyAndIVStrings();
-
-        //    List<string> keys = new List<string>();
-        //    keys.Add(result.key);
-        //    keys.Add(result.iv);
-
-        //    return Ok(keys);
-        //}
-
         /// <summary>
         /// GetFollowingComments: Get comments for the following tab,this handler returnes a list of comments from user following.
         /// </summary>
@@ -141,19 +114,37 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <param name="ctx"></param>
         /// <returns></returns>
 
-        [Authorize]
-        [HttpGet("GetFollowingCommnets")]
-        public async Task<IActionResult> GetFollowingComments(Guid userId, string topicName, CancellationToken ctx)
+        [HttpGet("{userId}/{topicName}/followingcomments")]
+        public async Task<IActionResult> GetFollowingComments(Guid userId, string topicName,string? encryptedToken ,CancellationToken ctx)
         {
             try
             {
+                //for testing to test next token 
+                #if DEBUG
+                long testRef = 5;
+                if (!Encryptor.TryEncryptValue(testRef, out string token))
+                    throw new CryptographicException("error while encrypting value, check the Value, Key or Iv");
+                encryptedToken = token;
+                #endif
+
+                long? nextPageToken = null;
                 string key = $"{userId}-get-following-comment";
 
-                //TODO add pagination
+                if(!string.IsNullOrWhiteSpace(encryptedToken))
+                {
+                   if (!Encryptor.TryDecrpytToken(encryptedToken, out nextPageToken)) //Decrypt token to get paging refernce 
+                       throw new CryptographicException("error while decrypting value, check the Value, Key or Iv");
+
+                    if (!nextPageToken.HasValue)
+                        throw new CryptographicException("next page token returned null after attempting decrypting");
+
+                    key += $"-{nextPageToken}";
+                }
+
                 var result = await _memoryCache.GetOrCreateAsync(key,
                     async entry =>{
-                        entry.SetOptions(CachingSettings.SetFollowingCommentCacheSetting());
-                        return await _commentProcessing.GetFollowingCommentsAsync(userId, topicName, ctx);
+                        entry.SetOptions(CachingSettings.SetCommentCacheSettings());
+                        return await _commentProcessing.GetFollowingCommentsAsync(userId, topicName, nextPageToken ,ctx);
                     });
 
                 if (result == null)
@@ -183,7 +174,7 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <param name="validator">Validation on the new comment to see if the comment fits requirements</param>
         /// <returns>Status Code</returns>
         [Authorize]
-        [HttpPost("PostComment")]
+        [HttpPost("post")]
         public async Task<IActionResult> PostCommentAsync(NewCommentDto postComment, CancellationToken ctx,
             [FromServices] IValidator<NewCommentDto> validator)
         {
@@ -221,7 +212,7 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <param name="validator">Validation on the request</param>
         /// <returns>Updated Comment</returns>
         [Authorize]
-        [HttpPatch("EditLikesOnCommentAsync")]
+        [HttpPatch("edit/likes")]
         public async Task<IActionResult> EditLikesOnCommentAsync([FromBody] LikeCommentDto commentToEdit,
                                                                  [FromServices] IValidator<LikeCommentDto> validator)
         {
@@ -255,7 +246,7 @@ namespace DiscussedApi.Controllers.V1.Comments
         }
 
         [Authorize]
-        [HttpPatch("EditCommentContext")]
+        [HttpPatch("edit/content")]
         public async Task<IActionResult> EditCommentContextAsync([FromBody] UpdateCommentDto updateComment,
                                                                  IValidator<UpdateCommentDto> validator,
                                                                  CancellationToken ctx)
@@ -294,7 +285,7 @@ namespace DiscussedApi.Controllers.V1.Comments
         /// <param name="ctx">Handles canceled requests</param>
         /// <returns>Status code</returns>
         [Authorize]
-        [HttpDelete("DeleteComment")]
+        [HttpDelete("{commentId}/delete")]
         public async Task<IActionResult> DeleteComment([Required(ErrorMessage = "Comment Id is required when attempting to delete")] Guid commentId, CancellationToken ctx)
         {
             try

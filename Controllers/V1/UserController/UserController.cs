@@ -55,7 +55,7 @@ namespace DiscussedApi.Controllers.V1.UserController
         }
 #endif
 
-        [HttpPost("Register")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto register)
         {
            
@@ -108,7 +108,7 @@ namespace DiscussedApi.Controllers.V1.UserController
             }
         }
 
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
             if (loginDto == null) return BadRequest("Login Credentials are null");
@@ -150,7 +150,7 @@ namespace DiscussedApi.Controllers.V1.UserController
         }
 
         [Authorize]
-        [HttpGet("LogOut")]
+        [HttpGet("logout")]
         public async Task<IActionResult> Logout()
         {
             var user = new User();
@@ -158,7 +158,7 @@ namespace DiscussedApi.Controllers.V1.UserController
             return Ok(user);
         }
 
-        [HttpPost("RecoverAccount")]
+        [HttpPost("recover/account")]
         public async Task<IActionResult> RecoverAccount([FromBody] RecoverUserDto recoverUser)
         {
             try
@@ -190,7 +190,7 @@ namespace DiscussedApi.Controllers.V1.UserController
         }
 
         [Authorize]
-        [HttpPost("EmailConfirmation")]
+        [HttpPost("mail/confirmation")]
         public async Task<IActionResult> EmailConfirmation([FromBody, EmailAddress] string email)
         {
             try

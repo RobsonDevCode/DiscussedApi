@@ -21,7 +21,7 @@ namespace DiscussedApi.Reopisitory.Comments
         }
 
         // ******** GET Commands ******** 
-        public async Task<List<Comment>> GetCommentsPostedByFollowing(Guid? userId, string topic, CancellationToken ctx)
+        public async Task<List<Comment>> GetCommentsPostedByFollowing(Guid? userId, string topic, long nextPageToken, CancellationToken ctx)
         {
             if (userId == null)
                 throw new ArgumentNullException("User id cannot be null when getting comments");
@@ -33,7 +33,8 @@ namespace DiscussedApi.Reopisitory.Comments
                     var result =  await commentDb.Comments
                                                  .Where(c => c.UserId == userId
                                                         && c.DtCreated >= Settings.TimeToGetCommentFrom
-                                                        && c.TopicId == topic)
+                                                        && c.TopicId == topic
+                                                        && c.Refernce > nextPageToken)
                                                  .Take(Settings.CommentMax)
                                                  .ToListAsync(ctx);
 
@@ -83,7 +84,7 @@ namespace DiscussedApi.Reopisitory.Comments
                 {
                     var nextPageOfComments = await connection.Comments
                                                              .Where(x => x.TopicId == topic
-                                                             && x.Refernce > nextPageToken)
+                                                             && x.Refernce > (nextPageToken == null ? 0 : nextPageToken))
                                                              .OrderByDescending(x => x.Interactions)
                                                              .ThenByDescending(x => x.DtCreated)
                                                              .Take(Settings.CommentMax)

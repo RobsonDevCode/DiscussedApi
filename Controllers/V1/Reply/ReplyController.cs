@@ -28,7 +28,7 @@ namespace DiscussedApi.Controllers.V1.Reply
 
 
         [Authorize]
-        [HttpPost("PostReply")]
+        [HttpPost("post")]
         public async Task<IActionResult> PostResultAsync([FromBody] PostReplyDto postReplyDto,[FromServices] IValidator<PostReplyDto> validator,
             CancellationToken ctx)
         {
@@ -53,7 +53,7 @@ namespace DiscussedApi.Controllers.V1.Reply
 
         }
 
-        [HttpGet("GetReplies")]
+        [HttpGet("{commentId}/replies")]
         public async Task<IActionResult> GetRepliesAsync(Guid commentId, CancellationToken ctx)
         {
             try
@@ -63,6 +63,8 @@ namespace DiscussedApi.Controllers.V1.Reply
 
                 //TODO add memeory caching 
                 //TODO add paging
+
+
                 var result = await _replyProcessing.GetReplysForCommentAsync(commentId, ctx);
 
                 if (result.Replies.Count == 0)

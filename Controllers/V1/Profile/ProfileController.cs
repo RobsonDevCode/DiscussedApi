@@ -20,7 +20,7 @@ namespace DiscussedApi.Controllers.V1.Profile
         }
 
        
-        [HttpPost("FollowUser")]
+        [HttpPost("follow")]
         public async Task<IActionResult> FollowUser(ProfileDto followUser, [FromServices] IValidator<ProfileDto> validator)
         {
             var validateRequest = await Validator<ProfileDto>.ValidationAsync(followUser, validator);
@@ -42,7 +42,7 @@ namespace DiscussedApi.Controllers.V1.Profile
         }
 
         [Authorize]
-        [HttpPost("UnfollowUser")]
+        [HttpPost("unfollow")]
         public async Task<IActionResult> UnfollowUser(ProfileDto unfollow, [FromServices] IValidator<ProfileDto> validator)
         {
             var validateRequest = await Validator<ProfileDto>.ValidationAsync(unfollow, validator);

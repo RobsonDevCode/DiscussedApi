@@ -10,8 +10,7 @@ namespace DiscussedApi.Reopisitory.Comments
     public interface ICommentDataAccess
     {
         //********** GET **********
-        Task<List<Comment>> GetCommentsPostedByFollowing(Guid? userId, string topic, CancellationToken ctx);
-        Task<ImmutableList<Comment>> GetTopCommentsForTodaysTopic(string topic, CancellationToken ctx);
+        Task<List<Comment>> GetCommentsPostedByFollowing(Guid? userId, string topic, long nextPageToken, CancellationToken ctx);
         Task<ImmutableList<Comment>> GetTopCommentsForTodaysTopic(string topic, long? nextPageToken ,CancellationToken ctx);
 
         //********** POST/PUT/PATCH **********

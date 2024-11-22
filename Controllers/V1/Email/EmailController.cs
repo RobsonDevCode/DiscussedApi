@@ -20,7 +20,7 @@ namespace DiscussedApi.Controllers.V1.Email
             _emailSender = emailSender;
         }
 
-        [HttpPost("SendRecoveryEmail")]
+        [HttpPost("send/recovery")]
         public async Task<IActionResult> SendRecoveryEmail([FromBody] EmailDto emailRecovery)
         {
             if (string.IsNullOrWhiteSpace(emailRecovery.Email)) return BadRequest("Email sent is null");
@@ -43,7 +43,7 @@ namespace DiscussedApi.Controllers.V1.Email
         }
 
         [Authorize]
-        [HttpPost("ConfirmEmail")]
+        [HttpPost("send/confirmation")]
         public async Task<IActionResult> SendConfirmationEmail([FromBody]EmailDto confirmation)
         {
             if (string.IsNullOrWhiteSpace(confirmation.Email)) return BadRequest("Email sent is null");
