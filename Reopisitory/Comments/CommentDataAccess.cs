@@ -8,6 +8,7 @@ using DiscussedApi.Reopisitory.DataMapping;
 using Discusseddto;
 using Discusseddto.Comment;
 using Discusseddto.CommentDtos;
+using MailKit;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using NLog;
@@ -27,6 +28,26 @@ namespace DiscussedApi.Reopisitory.Comments
         }
 
         // ******** GET Commands ******** 
+        public async Task<Comment?> GetComment(Guid commentId, CancellationToken ctx)
+        {
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
+
+            await using MySqlCommand cmd = new(@"SELECT Id, UserId, Content, ReplyCount, 
+                                      Likes, DtCreated, DtUpdated,
+                                      TopicId, Interactions, UserName, Reference
+                                      FROM comments WHERE id = @id", connection);
+
+            cmd.Parameters.AddWithValue("@id", commentId);
+            await using MySqlDataReader reader = await cmd.ExecuteReaderAsync(ctx);
+            while(await reader.ReadAsync(ctx))
+            {
+                return RepositoryMappers.MapComment(reader);
+            }
+
+            return null;
+        }
+
         public async Task<List<Comment>> GetCommentsPostedByFollowing(Guid? userId, string topic, long nextPageToken, CancellationToken ctx)
         {
             if (userId == null)
@@ -34,12 +55,12 @@ namespace DiscussedApi.Reopisitory.Comments
 
             string sql = @"SELECT Id, UserId, Content, ReplyCount, 
                                       Likes, DtCreated, DtUpdated,
-                                      TopicId, Interactions, UserName, Refernce
+                                      TopicId, Interactions, UserName, Reference
                                       FROM comments 
                                       WHERE UserId = @userId 
                                       AND DtCreated >= @dtFrom 
                                       AND TopicId = @topicId
-                                      AND Refernce > @nextPageToken LIMIT @commentMax 
+                                      AND Reference > @nextPageToken LIMIT @commentMax 
                                       ORDER BY interactions DESC, DtUpdated desc;"
                                        ;
 
@@ -74,10 +95,10 @@ namespace DiscussedApi.Reopisitory.Comments
         {
             string sql = @"SELECT Id, UserId, Content, ReplyCount, 
                                   Likes, DtCreated, DtUpdated,
-                                  TopicId, Interactions, UserName, Refernce
+                                  TopicId, Interactions, UserName, Reference
                            FROM comments
                            WHERE TopicId = @topicId AND 
-                           Refernce > @nextPageToken
+                           Reference > @nextPageToken
                            ORDER BY interactions DESC, DtUpdated desc;";
 
             await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
@@ -178,12 +199,12 @@ namespace DiscussedApi.Reopisitory.Comments
             string statusMessage;
             if (comment.IsLike)
             {
-                sql = "UPDATE comments SET likes = likes + 1  WHERE id = @id";
+                sql = "UPDATE comments SET likes = likes + 1, dtupdated = NOW()  WHERE id = @id";
                 statusMessage = $"{comment.UserId} Successfully liked reply {comment.CommentId}";
             }
             else
             {
-                sql = "UPDATE comments SET likes = likes - 1  WHERE id = @id";
+                sql = "UPDATE comments SET likes = likes - 1, dtupdated = NOW() WHERE id = @id";
                 statusMessage = $"{comment.UserId} Successfully unliked reply {comment.CommentId}";
             }
 
@@ -199,38 +220,23 @@ namespace DiscussedApi.Reopisitory.Comments
             return statusMessage;
         }
 
-        public async Task<Comment> UpdateCommentContentAsync(UpdateCommentDto comment, CancellationToken ctx)
+        public async Task UpdateCommentContentAsync(UpdateCommentDto comment, CancellationToken ctx)
         {
-            try
-            {
-                if (string.IsNullOrEmpty(comment.Content))
-                    throw new ArgumentNullException("New content is null when attempting to edit content");
+            if (string.IsNullOrEmpty(comment.Content))
+                throw new ArgumentNullException("New content is null when attempting to edit content");
 
-                //check if user trying to delete the request is the user who posted it
-                if (!await validateUserPostedComment(comment.UserId, comment.CommentId, ctx))
-                    throw new Exception("User trying to edit comment did not post it!");
+            //check if user trying to delete the request is the user who posted it
+            if (!await validateUserPostedComment(comment.UserId, comment.Id, ctx))
+                throw new ServiceNotAuthenticatedException("User cant edit post as it doesnt belong to them");
 
-                var request = await _commentContext.Comments
-                                    .FirstOrDefaultAsync(x => x.Id.Equals(comment.CommentId) && x.UserId.Equals(comment.UserId));
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
 
-                if (request == null)
-                    throw new Exception($"Error while attempting to update content on comment {comment.CommentId}");
+            await using MySqlCommand cmd = new(@"UPDATE comments SET content = @updatedContent, dtupdated = NOW() WHERE id = @id", connection);
+            cmd.Parameters.AddWithValue("@updatedContent", comment.Content.TrimEnd());
+            cmd.Parameters.AddWithValue("@id", comment.Id);
 
-                request.Content = comment.Content;
-
-                var result = await _commentContext.SaveChangesAsync();
-
-                if (result == 0)
-                    throw new Exception("Query was succesfully sent to database but no change in result");
-
-                return request;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
-            throw new NotImplementedException();
+            await cmd.ExecuteNonQueryAsync(ctx); ;
         }
 
         //******** Delete Commands ********
@@ -264,7 +270,7 @@ namespace DiscussedApi.Reopisitory.Comments
             try
             {
                 return (await _commentContext.Comments
-                                                .Where(x => x.Id.Equals(userId) && x.UserId.Equals(userId))
+                                                .Where(x => x.Id.Equals(commentId) && x.UserId.Equals(userId))
                                                 .CountAsync(ctx) == 1) ? true : false;
             }
             catch (Exception ex)
@@ -274,6 +280,6 @@ namespace DiscussedApi.Reopisitory.Comments
             }
         }
 
-
+       
     }
 }

@@ -98,19 +98,16 @@ namespace DiscussedApi.Processing.Comments
 
             await _commentDataAccess.PostCommentAsync(comment, ctx);
         }
-        public async Task<Comment> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx)
+        public async Task<Comment?> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx)
         {
             try
             {
-                if (!await _commentDataAccess.IsCommentValid(updateComment.CommentId, ctx))
+                if (!await _commentDataAccess.IsCommentValid(updateComment.Id, ctx))
                     throw new KeyNotFoundException("Comment not found or has been deleted");
 
-                //check if user exists
-                User user = await _userManager.FindByIdAsync(updateComment.UserId.ToString()) ??
-                         throw new KeyNotFoundException("User who posted comment could not be found or has deleted there account");
+                await _commentDataAccess.UpdateCommentContentAsync(updateComment, ctx);
 
-
-                return await _commentDataAccess.UpdateCommentContentAsync(updateComment, ctx);
+                return await _commentDataAccess.GetComment(updateComment.Id, ctx);
             }
             catch (Exception ex)
             {

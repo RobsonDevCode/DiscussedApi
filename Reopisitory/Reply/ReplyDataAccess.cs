@@ -82,7 +82,7 @@ namespace DiscussedApi.Reopisitory.Replies
         {
             string sql = @"SELECT c.Id, c.UserId, c.Content, c.ReplyCount, 
                                       c.Likes, c.DtCreated, c.DtUpdated, c.TopicId, 
-                                       c.UserName, c.Refernce, c.Interactions
+                                       c.UserName, c.Reference, c.Interactions
                                    (SELECT JSON_ARRAYAGG(
                                        JSON_OBJECT (
                                            'Id', r.Id,

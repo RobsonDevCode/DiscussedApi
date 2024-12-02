@@ -13,8 +13,7 @@ namespace DiscussedApi.Processing.Comments
        Task<string> LikeOrDislikeCommentAsync(LikeCommentDto commentToEditDto, CancellationToken ctx);
        Task DeleteCommentAsync(Guid commentId, CancellationToken ctx);
        Task<ImmutableList<Comment>> GetTopCommentsAsync(string topic, long? nextPageToken ,CancellationToken ctx);
-
-       Task<Comment> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx);
+       Task<Comment?> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx);
         
     }
 }

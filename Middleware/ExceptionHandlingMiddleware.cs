@@ -59,7 +59,8 @@ namespace DiscussedApi.Middleware
             var problemDetails = new ProblemDetails()
             {
                 Status = StatusCodes.Status500InternalServerError,
-                Title = "Server Error"
+                Title = "Server Error",
+                Detail = ex.Message //remove in prd
             };
 
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;

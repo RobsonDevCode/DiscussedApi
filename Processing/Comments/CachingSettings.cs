@@ -29,7 +29,7 @@ namespace DiscussedApi.Processing.Comments
             try
             {
 
-                if (!Encryptor.TryDecrpytToken(encryptedToken, out long? nextPageToken)) //Decrypt encryptedToken to get paging refernce 
+                if (!Encryptor.TryDecrpytToken(encryptedToken, out long? nextPageToken)) //Decrypt encryptedToken to get paging Reference 
                     throw new CryptographicException("error while decrypting value, check the Value, Key or Iv");
 
                 if (!nextPageToken.HasValue)

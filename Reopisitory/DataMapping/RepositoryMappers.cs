@@ -36,7 +36,7 @@ namespace DiscussedApi.Reopisitory.DataMapping
                 DtUpdated = reader.GetDateTime("DtUpdated"),
                 TopicId = reader.GetString("TopicId"),
                 UserName = reader.GetString("UserName"),
-                Reference = reader.GetInt32("Refernce"),
+                Reference = reader.GetInt32("Reference"),
                 Interactions = reader.GetInt32("Interactions")
             };
         }

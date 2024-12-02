@@ -45,7 +45,7 @@ namespace DiscussedApi.Controllers.V1.Comments
         // ********** GET COMMANDS **********
 
         /// <summary>
-        ///  GetTopComments: Get Comments based on user prefernce 
+        ///  GetTopComments: Get Comments based on user pReference 
         /// </summary>
         /// <param name="topicName">Name of the topic we're getting comments from</param>
         /// <param name="ctx">cancellation token</param>
@@ -204,7 +204,6 @@ namespace DiscussedApi.Controllers.V1.Comments
 
         }
 
-        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -218,12 +217,12 @@ namespace DiscussedApi.Controllers.V1.Comments
             if (validate.FaliedValidation != null)
                 return ValidationProblem(validate.FaliedValidation);
 
-            Comment updatedComment = await _commentProcessing.EditCommentContentAsync(updateComment, ctx);
+            Comment? updatedComment = await _commentProcessing.EditCommentContentAsync(updateComment, ctx);
 
             if (updatedComment == null)
             {
-                _logger.Info($"Comment returned null when updating {updateComment.CommentId}");
-                return NoContent();
+                _logger.Info($"Comment returned null when updating {updateComment.Id}");
+                return StatusCode(500, "Server Error please try again or come back later!");
             }
 
             return Ok(updatedComment);
