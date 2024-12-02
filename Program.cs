@@ -26,6 +26,9 @@ using DiscussedApi.Processing.Topics;
 using DiscussedApi.Reopisitory.Topics;
 using DiscussedApi.Processing.Replies;
 using DiscussedApi.Reopisitory.Replies;
+using DiscussedApi.Middleware;
+using DiscussedApi.Abstraction;
+using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -140,6 +143,7 @@ builder.Services.AddTransient<ITopicProcessing, TopicProcessing>();
 builder.Services.AddTransient<ITopicDataAccess, TopicDataAccess>();
 builder.Services.AddTransient<IReplyProcessing, ReplyProcessing>();
 builder.Services.AddTransient<IReplyDataAccess, ReplyDataAccess>();
+builder.Services.AddScoped<IMySqlConnectionFactory, MySqlConnectionFactory>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 builder.Services.AddMemoryCache();
@@ -156,6 +160,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

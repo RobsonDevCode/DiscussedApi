@@ -19,7 +19,7 @@ namespace DiscussedApi.Controllers.V1.Profile
             _profileProcessing = profileProcessing;
         }
 
-       
+
         [HttpPost("follow")]
         public async Task<IActionResult> FollowUser(ProfileDto followUser, [FromServices] IValidator<ProfileDto> validator)
         {
@@ -27,18 +27,9 @@ namespace DiscussedApi.Controllers.V1.Profile
 
             if (validateRequest.FaliedValidation != null) return ValidationProblem(validateRequest.FaliedValidation);
 
-            try
-            {
-                await _profileProcessing.FollowUser(followUser);
+            await _profileProcessing.FollowUser(followUser);
 
-                return Ok();
-            }
-
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            return Ok();
         }
 
         [Authorize]
@@ -47,19 +38,11 @@ namespace DiscussedApi.Controllers.V1.Profile
         {
             var validateRequest = await Validator<ProfileDto>.ValidationAsync(unfollow, validator);
 
-            if(validateRequest.FaliedValidation != null) return ValidationProblem(validateRequest.FaliedValidation);
+            if (validateRequest.FaliedValidation != null) return ValidationProblem(validateRequest.FaliedValidation);
 
-            try
-            {
-                await _profileProcessing.UnfollowUser(unfollow);
+            await _profileProcessing.UnfollowUser(unfollow);
 
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            return Ok();
 
         }
     }

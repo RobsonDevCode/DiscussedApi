@@ -14,9 +14,9 @@ namespace DiscussedApi.Reopisitory.Comments
         Task<ImmutableList<Comment>> GetTopCommentsForTodaysTopic(string topic, long? nextPageToken ,CancellationToken ctx);
 
         //********** POST/PUT/PATCH **********
-        Task PostCommentAsync(Comment comment, CancellationToken ctx);
+        Task PostCommentAsync(NewCommentDto comment, CancellationToken ctx);
         Task<Comment> UpdateCommentContentAsync(UpdateCommentDto comment, CancellationToken ctx);
-        Task<Comment> UpdateCommentLikesAsync(LikeCommentDto likedComment);
+        Task<string> UpdateCommentLikesAsync(LikeCommentDto likedComment, CancellationToken ctx);
 
         //********** DELETE **********
         Task DeleteCommentAsyncEndpoint(Guid userId, CancellationToken ctx);

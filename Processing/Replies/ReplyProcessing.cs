@@ -1,6 +1,9 @@
-﻿using DiscussedApi.Models.Comments;
+﻿using DiscussedApi.Models.Comments.Replies;
+using DiscussedApi.Models.UserInfo;
+using DiscussedApi.Reopisitory.Comments;
 using DiscussedApi.Reopisitory.Replies;
 using Discusseddto.CommentDtos.ReplyDtos;
+using Microsoft.AspNetCore.Identity;
 using NLog;
 
 namespace DiscussedApi.Processing.Replies
@@ -9,51 +12,45 @@ namespace DiscussedApi.Processing.Replies
     {
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         private readonly IReplyDataAccess _replyDataAccess;
-        public ReplyProcessing(IReplyDataAccess replyDataAccess)
+        private readonly UserManager<User> _userManager;
+        private readonly ICommentDataAccess _commentDataAccess;
+        public ReplyProcessing(IReplyDataAccess replyDataAccess,
+            UserManager<User> userManager,
+            ICommentDataAccess commentDataAccess)
         {
             _replyDataAccess = replyDataAccess;
+            _userManager = userManager;
+            _commentDataAccess = commentDataAccess;
         }
         public async Task<RepliesWithComment> GetReplysForCommentAsync(Guid commentId, CancellationToken ctx)
         {
-            try
-            {
-                return await _replyDataAccess.GetRepliesAsync(commentId, ctx);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            return await _replyDataAccess.GetRepliesAsync(commentId, ctx);
         }
 
         public async Task PostReplyAsync(PostReplyDto postReplyDto, CancellationToken ctx)
         {
-            try
-            {
-                Reply reply = new Reply()
-                {
-                    Id = postReplyDto.Id,
-                    UserName = postReplyDto.UserName,
-                    UserId = postReplyDto.UserId,
-                    CommentId = postReplyDto.CommentId,
-                    Content = postReplyDto.ReplyContent,
-                    DtCreated = DateTime.UtcNow,
-                    DtUpdated = DateTime.UtcNow,
-                    Likes = 0,
-                };
-
-                await _replyDataAccess.PostReply(reply, ctx);
-            }
-
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            await _replyDataAccess.PostReply(postReplyDto, ctx);
         }
-        public Task DeleteReplyAsync(Guid commentId)
+        public async Task<string> EditReplyLikesAsync(EditReplyLikesDto replyLikesDto, CancellationToken ctx)
         {
-            throw new NotImplementedException();
+            var statusMessage = await _replyDataAccess.EditReplyLikesAsync(replyLikesDto, ctx);
+
+            if (string.IsNullOrEmpty(statusMessage))
+                throw new KeyNotFoundException("Reply cannot be found or has been deleted!");
+
+            return statusMessage;
+        }
+
+        public async Task<string> DeleteReplyAsync(Guid replyId, Guid commentId, string userId, CancellationToken ctx)
+        {
+            if (!await _commentDataAccess.IsCommentValid(commentId))
+                throw new KeyNotFoundException("Comment reply is attempting respond to cannot be found or has been deleted");
+
+            if (await _userManager.FindByIdAsync(userId) == null)
+                throw new UnauthorizedAccessException("No account found when trying to reply");
+
+            return await _replyDataAccess.DeleteReplyAsync(replyId, ctx);
+
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-namespace DiscussedApi.Models.Comments
+namespace DiscussedApi.Models.Comments.Replies
 {
     public class RepliesWithComment
     {

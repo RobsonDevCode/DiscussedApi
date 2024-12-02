@@ -1,4 +1,4 @@
-﻿using DiscussedApi.Models.Comments;
+﻿using DiscussedApi.Models.Comments.Replies;
 using Discusseddto.CommentDtos.ReplyDtos;
 
 namespace DiscussedApi.Processing.Replies
@@ -7,6 +7,7 @@ namespace DiscussedApi.Processing.Replies
     {
         Task PostReplyAsync(PostReplyDto postReplyDto, CancellationToken ctx);
         Task<RepliesWithComment> GetReplysForCommentAsync(Guid commentId, CancellationToken ctx );
-        Task DeleteReplyAsync(Guid commentId);
+        Task<string> DeleteReplyAsync(Guid replyId, Guid commmentId,string userId, CancellationToken ctx);
+        Task<string> EditReplyLikesAsync(EditReplyLikesDto replyLikesDto, CancellationToken ctx);
     }
 }

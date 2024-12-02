@@ -17,19 +17,11 @@ namespace DiscussedApi.Controllers.V1.Topic
             _topicProcessing = topicProcessing;
         }
 
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("generate")]
         public async Task<IActionResult> GenerateTopicAsync()
         {
-            try
-            {
-                return Ok(await _topicProcessing.GetTopicAsync());
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(await _topicProcessing.GetTopicAsync());
         }
 
 

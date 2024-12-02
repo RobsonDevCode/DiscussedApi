@@ -28,18 +28,18 @@ namespace DiscussedApi.Processing.Comments
         private readonly ITopicDataAccess _topicDataAccess;
         private readonly UserManager<User> _userManager;
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
-        public CommentProcessing(ICommentDataAccess commentDataAccess, IProfileDataAccess profileDataAccess, 
+        public CommentProcessing(ICommentDataAccess commentDataAccess, IProfileDataAccess profileDataAccess,
                                 UserManager<User> userManager, IProcessCommentsConcurrently processCommentsConcurrently,
                                 ITopicDataAccess topicDataAccess, IMemoryCache memoryCache)
         {
-             _commentDataAccess = commentDataAccess;
+            _commentDataAccess = commentDataAccess;
             _profileDataAccess = profileDataAccess;
             _userManager = userManager;
             _processCommentsConcurrently = processCommentsConcurrently;
             _topicDataAccess = topicDataAccess;
         }
 
-        public async Task<List<Comment>> GetFollowingCommentsAsync(Guid userId,string topic, long? nextPageToken, CancellationToken ctx)
+        public async Task<List<Comment>> GetFollowingCommentsAsync(Guid userId, string topic, long? nextPageToken, CancellationToken ctx)
         {
             try
             {
@@ -55,7 +55,7 @@ namespace DiscussedApi.Processing.Comments
                 //get comments from user following who's posted
                 var commentsFromFollowed = await _processCommentsConcurrently.GetCommentsConcurrently(userFollowing, topic, nextPageToken, ctx);
 
-                if (commentsFromFollowed == null) 
+                if (commentsFromFollowed == null)
                     throw new ArgumentNullException($"Comments From Followers cannot be null when user has followers");
 
                 if (commentsFromFollowed.Count == 0)
@@ -85,49 +85,18 @@ namespace DiscussedApi.Processing.Comments
         /// <returns cref="Comment">List of immutable comments</returns>
         public async Task<ImmutableList<Comment>> GetTopCommentsAsync(string topic, long? nextPageToken, CancellationToken ctx)
         {
-            try
-            {
-                return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic,nextPageToken, ctx);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            return await _commentDataAccess.GetTopCommentsForTodaysTopic(topic, nextPageToken, ctx);
         }
 
-        public async Task PostCommentAsync(NewCommentDto newComment, CancellationToken ctx)
+        public async Task PostCommentAsync(NewCommentDto comment, CancellationToken ctx)
         {
-
-            if (newComment == null)
+            if (comment == null)
             {
                 _logger.Error("Error Posting Comment: Comment is null");
                 throw new ArgumentNullException("Comment was null");
             }
 
-            try
-            {
-                Comment comment = new()
-                {
-                    Id = newComment.Id,
-                    TopicId = newComment.TopicId,
-                    UserId = newComment.UserId,
-                    UserName = newComment.UserName,
-                    Content = newComment.Content,
-                    ReplyCount = 0,
-                    Likes = 0,
-                    DtCreated = DateTime.UtcNow,
-                    DtUpdated = DateTime.UtcNow,
-                };
-
-                await _commentDataAccess.PostCommentAsync(comment, ctx);
-            }
-            catch (Exception ex) 
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
-
+            await _commentDataAccess.PostCommentAsync(comment, ctx);
         }
         public async Task<Comment> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx)
         {
@@ -136,33 +105,25 @@ namespace DiscussedApi.Processing.Comments
                 if (!await _commentDataAccess.IsCommentValid(updateComment.CommentId, ctx))
                     throw new KeyNotFoundException("Comment not found or has been deleted");
 
-                 //check if user exists
-                 User user = await _userManager.FindByIdAsync(updateComment.UserId.ToString()) ??
-                          throw new KeyNotFoundException("User who posted comment could not be found or has deleted there account");
+                //check if user exists
+                User user = await _userManager.FindByIdAsync(updateComment.UserId.ToString()) ??
+                         throw new KeyNotFoundException("User who posted comment could not be found or has deleted there account");
 
 
                 return await _commentDataAccess.UpdateCommentContentAsync(updateComment, ctx);
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
-        }
-        public async Task<Comment> LikeOrDislikeCommentAsync(LikeCommentDto commentToEditDto)
-        {
-            try
-            {
-                if (!await _commentDataAccess.IsCommentValid(commentToEditDto.CommentId))
-                    throw new KeyNotFoundException("Comment not found or has been deleted");
-
-                return await _commentDataAccess.UpdateCommentLikesAsync(commentToEditDto);
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, ex.Message);
                 throw;
             }
+        }
+        public async Task<string> LikeOrDislikeCommentAsync(LikeCommentDto commentToEditDto, CancellationToken ctx)
+        {
+            if (!await _commentDataAccess.IsCommentValid(commentToEditDto.CommentId))
+                throw new KeyNotFoundException("Comment not found or has been deleted");
+
+            return await _commentDataAccess.UpdateCommentLikesAsync(commentToEditDto, ctx);
         }
         public async Task DeleteCommentAsync(Guid commentId, CancellationToken ctx)
         {
@@ -172,7 +133,6 @@ namespace DiscussedApi.Processing.Comments
                     throw new KeyNotFoundException("Comment not found or has been deleted already");
 
                 await _commentDataAccess.DeleteCommentAsyncEndpoint(commentId, ctx);
-
                 _logger.Info($"Comment {commentId} has been deleted");
             }
             catch (Exception ex)

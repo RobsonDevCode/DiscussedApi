@@ -12,7 +12,6 @@ namespace DiscussedApi.Validations.Comment
             RuleFor(x => x.UserId).NotNull().WithMessage("User Id can't be null or empty");
             RuleFor(x => x.UserName).NotNull().WithMessage("User name can't be null when posting a comment");
             RuleFor(x => x.UserName).Length(4, 150).WithMessage("Username is invalid must be between 4 - 150 characters");
-            RuleFor(x => x.Id).NotNull().WithMessage("Comment Id cant be null");
 
         }
     }

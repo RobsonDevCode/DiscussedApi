@@ -5,6 +5,7 @@ namespace DiscussedApi.Extentions
 {
     public static class Encryptor
     {
+        private static NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
         public static bool TryDecrpytToken(string encryptedToken, out long? nextpageToken)
         {
             try
@@ -35,8 +36,9 @@ namespace DiscussedApi.Extentions
                     }
                 }
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.Error(ex.Message);
                 nextpageToken = null;
                 return false;
             } 
@@ -71,6 +73,7 @@ namespace DiscussedApi.Extentions
             }
             catch(Exception ex)
             {
+                _logger.Error(ex.Message);
                 encryptedString = "";
                 return false;
             }

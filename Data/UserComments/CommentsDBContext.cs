@@ -1,5 +1,6 @@
 ﻿using DiscussedApi.Configuration;
 using DiscussedApi.Models.Comments;
+using DiscussedApi.Models.Comments.Replies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

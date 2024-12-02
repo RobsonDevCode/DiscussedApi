@@ -1,24 +1,8 @@
 [
   {
-    "ContainingType": "DiscussedApi.Controllers.V1.Reply.ReplyController",
-    "Method": "PostResultAsync",
-    "RelativePath": "api/Reply/PostReply",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "postReplyDto",
-        "Type": "Discusseddto.CommentDtos.ReplyDtos.PostReplyDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
     "ContainingType": "DiscussedApi.Controllers.V1.Topic.TopicController",
     "Method": "GenerateTopicAsync",
-    "RelativePath": "api/Topic/GenerateTopic",
+    "RelativePath": "api/Topic/generate",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -28,7 +12,7 @@
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
     "Method": "DeleteComment",
-    "RelativePath": "V1/Comment/DeleteComment",
+    "RelativePath": "V1/Comment/{commentId}/delete",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
@@ -36,15 +20,76 @@
       {
         "Name": "commentId",
         "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
+    "Method": "GetTopComments",
+    "RelativePath": "V1/Comment/comments",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "topicName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "encryptedToken",
+        "Type": "System.String",
         "IsRequired": false
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
   },
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
     "Method": "EditCommentContextAsync",
-    "RelativePath": "V1/Comment/EditCommentContext",
+    "RelativePath": "V1/Comment/edit/content",
     "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
@@ -55,12 +100,32 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
   },
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
     "Method": "EditLikesOnCommentAsync",
-    "RelativePath": "V1/Comment/EditLikesOnCommentAsync",
+    "RelativePath": "V1/Comment/edit/likes",
     "HttpMethod": "PATCH",
     "IsController": true,
     "Order": 0,
@@ -71,28 +136,32 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
-    "Method": "GetCommentsWihoutSignIn",
-    "RelativePath": "V1/Comment/GetCommentsNoSignIn",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
+    "ReturnTypes": [
       {
-        "Name": "topic",
-        "Type": "System.String",
-        "IsRequired": false
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
       }
-    ],
-    "ReturnTypes": []
+    ]
   },
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
-    "Method": "GetComments",
-    "RelativePath": "V1/Comment/GetTodaysComments",
+    "Method": "GetFollowingComments",
+    "RelativePath": "V1/Comment/followingcomments",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -106,14 +175,39 @@
         "Name": "topicName",
         "Type": "System.String",
         "IsRequired": false
+      },
+      {
+        "Name": "encryptedToken",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
   },
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Comments.CommentController",
     "Method": "PostCommentAsync",
-    "RelativePath": "V1/Comment/PostComment",
+    "RelativePath": "V1/Comment/post",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -124,12 +218,32 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 201
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
   },
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Email.EmailController",
     "Method": "SendConfirmationEmail",
-    "RelativePath": "V1/Email/ConfirmEmail",
+    "RelativePath": "V1/Email/send/confirmation",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -145,7 +259,7 @@
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Email.EmailController",
     "Method": "SendRecoveryEmail",
-    "RelativePath": "V1/Email/SendRecoveryEmail",
+    "RelativePath": "V1/Email/send/recovery",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -161,7 +275,7 @@
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Profile.ProfileController",
     "Method": "FollowUser",
-    "RelativePath": "V1/Profile/FollowUser",
+    "RelativePath": "V1/Profile/follow",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -177,7 +291,7 @@
   {
     "ContainingType": "DiscussedApi.Controllers.V1.Profile.ProfileController",
     "Method": "UnfollowUser",
-    "RelativePath": "V1/Profile/UnfollowUser",
+    "RelativePath": "V1/Profile/unfollow",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -191,25 +305,168 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
-    "Method": "EmailConfirmation",
-    "RelativePath": "V1/User/EmailConfirmation",
+    "ContainingType": "DiscussedApi.Controllers.V1.Reply.ReplyController",
+    "Method": "DeleteReply",
+    "RelativePath": "v1/Reply/delete/{replyId}/{commentId}/{userId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "replyId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "commentId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Reply.ReplyController",
+    "Method": "UpdateReplyLikes",
+    "RelativePath": "v1/Reply/edit/likes",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "editReplyLikesDto",
+        "Type": "Discusseddto.CommentDtos.ReplyDtos.EditReplyLikesDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Reply.ReplyController",
+    "Method": "PostResultAsync",
+    "RelativePath": "v1/Reply/post",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "email",
-        "Type": "System.String",
+        "Name": "postReplyDto",
+        "Type": "Discusseddto.CommentDtos.ReplyDtos.PostReplyDto",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 201
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.Reply.ReplyController",
+    "Method": "GetRepliesAsync",
+    "RelativePath": "v1/Reply/replies",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "commentId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "nextpage_token",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
   },
   {
     "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "Login",
-    "RelativePath": "V1/User/Login",
+    "RelativePath": "V1/User/login",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -225,7 +482,7 @@
   {
     "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "Logout",
-    "RelativePath": "V1/User/LogOut",
+    "RelativePath": "V1/User/logout",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -234,8 +491,24 @@
   },
   {
     "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
+    "Method": "EmailConfirmation",
+    "RelativePath": "V1/User/mail/confirmation",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "RecoverAccount",
-    "RelativePath": "V1/User/RecoverAccount",
+    "RelativePath": "V1/User/recover/account",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -251,7 +524,7 @@
   {
     "ContainingType": "DiscussedApi.Controllers.V1.UserController.UserController",
     "Method": "Register",
-    "RelativePath": "V1/User/Register",
+    "RelativePath": "V1/User/register",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,

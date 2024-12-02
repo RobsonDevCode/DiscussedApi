@@ -25,44 +25,28 @@ namespace DiscussedApi.Controllers.V1.Email
         {
             if (string.IsNullOrWhiteSpace(emailRecovery.Email)) return BadRequest("Email sent is null");
 
-            try
-            {
-                string body = await _emailSender.GenerateHtmlBodyAsync(EmailType.Recovery);
+            string body = await _emailSender.GenerateHtmlBodyAsync(EmailType.Recovery);
 
-                if (string.IsNullOrWhiteSpace(body)) return StatusCode(500, "Unable to send recovery email");
+            if (string.IsNullOrWhiteSpace(body)) return StatusCode(500, "Unable to send recovery email");
 
-                await _emailSender.SendEmailAsync(emailRecovery.Email, emailRecovery.Subject, body);
+            await _emailSender.SendEmailAsync(emailRecovery.Email, emailRecovery.Subject, body);
 
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return StatusCode(500, ex.Message);
-            }
+            return Ok();
         }
 
         [Authorize]
         [HttpPost("send/confirmation")]
-        public async Task<IActionResult> SendConfirmationEmail([FromBody]EmailDto confirmation)
+        public async Task<IActionResult> SendConfirmationEmail([FromBody] EmailDto confirmation)
         {
             if (string.IsNullOrWhiteSpace(confirmation.Email)) return BadRequest("Email sent is null");
 
-            try
-            {
-                string body = await _emailSender.GenerateHtmlBodyAsync(EmailType.Confirmation);
+            string body = await _emailSender.GenerateHtmlBodyAsync(EmailType.Confirmation);
 
-                if (string.IsNullOrWhiteSpace(body)) return StatusCode(500, "Unable to send Confirmation Email");
+            if (string.IsNullOrWhiteSpace(body)) return StatusCode(500, "Unable to send Confirmation Email");
 
-                await _emailSender.SendEmailAsync(confirmation.Email, confirmation.Subject, body);
+            await _emailSender.SendEmailAsync(confirmation.Email, confirmation.Subject, body);
 
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            return Ok();
         }
 
         //TODO add a topic notification probably better todo in a seperate app 
