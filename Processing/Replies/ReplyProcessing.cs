@@ -31,6 +31,7 @@ namespace DiscussedApi.Processing.Replies
         {
             await _replyDataAccess.PostReply(postReplyDto, ctx);
         }
+
         public async Task<string> EditReplyLikesAsync(EditReplyLikesDto replyLikesDto, CancellationToken ctx)
         {
             var statusMessage = await _replyDataAccess.EditReplyLikesAsync(replyLikesDto, ctx);
@@ -39,6 +40,15 @@ namespace DiscussedApi.Processing.Replies
                 throw new KeyNotFoundException("Reply cannot be found or has been deleted!");
 
             return statusMessage;
+        }
+
+        public async Task<string> EditReplyContent(EditReplyContentDto editedReply, CancellationToken ctx)
+        {
+            var result = await _replyDataAccess.EditReplyContentAsync(editedReply, ctx);
+            if (string.IsNullOrWhiteSpace(result))
+                throw new Exception("Error trying to return updated reply content");
+
+            return result;
         }
 
         public async Task<string> DeleteReplyAsync(Guid replyId, Guid commentId, string userId, CancellationToken ctx)

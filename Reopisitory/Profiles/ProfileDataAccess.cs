@@ -1,83 +1,77 @@
-﻿using DiscussedApi.Data.Profiles;
-using DiscussedApi.Data.UserComments;
+﻿using DiscussedApi.Abstraction;
 using DiscussedApi.Models.Profiles;
 using DiscussedApi.Models.UserInfo;
 using Discusseddto.Profile;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using System.Collections.Immutable;
+using System.Data;
 
 namespace DiscussedApi.Reopisitory.Profiles
 {
     public class ProfileDataAccess : IProfileDataAccess
     {
-        ProfileDBContext _profileDBContext = new();
-        CommentsDBContext _commentsDBContext = new CommentsDBContext();
-        private readonly NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
-
-        public async Task<List<Guid?>> GetUserFollowing(Guid userId)
+        private readonly IMySqlConnectionFactory _mySqlConnectionFactory;
+        public ProfileDataAccess(IMySqlConnectionFactory mySqlConnectionFactory)
         {
-            try
-            {
-                var following = await _profileDBContext.Following
-                    .Where(x => x.UserGuid == userId)
-                    .Select(x => x.UserFollowing)
-                    .Take(100)
-                    .ToListAsync();
-
-                return following;
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex);
-                throw;
-            }
+            _mySqlConnectionFactory = mySqlConnectionFactory;
         }
-      
 
-        public async Task FollowUser(ProfileDto profile)
+        public async Task<List<Guid?>> GetUserFollowing(Guid userId, CancellationToken ctx)
         {
-            try
-            {
-                Following following = new Following
-                {
-                    UserName = profile.UserName,
-                    UserGuid = profile.UserGuid,
-                    UserFollowing = profile.SelectedUser,
-                    IsFollowing = true
-                };
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
 
-                await _profileDBContext.Following.AddAsync(following);
-                var result = await _profileDBContext.SaveChangesAsync();
+            await connection.OpenAsync();
+            string sql = @"SELECT UserFollowing FROM following WHERE UserGuid = @userId;";
 
-                if (result == 0) throw new Exception("Data query was executed but no change was made");
-                
-            }
-            catch(Exception ex)
+            await using MySqlCommand cmd = new(sql, connection);
+            cmd.Parameters.Add("@userId", MySqlDbType.Guid).Value = userId;
+
+            using MySqlDataReader reader = await cmd.ExecuteReaderAsync();
+            List<Guid?> following = new List<Guid?>();
+
+            while (await reader.ReadAsync())
             {
-                _logger.Error(ex, ex.Message);
-                throw;
+                following.Add(reader.GetGuid("UserFollowing"));
             }
+
+            return following;
         }
-      
 
-        public async Task UnFollowUser(ProfileDto profile)
+
+        public async Task FollowUser(ProfileDto profile, CancellationToken ctx)
         {
-            Following following = new Following
-            {
-                UserName = profile.UserName,
-                UserGuid = profile.UserGuid,
-                UserFollowing = profile.SelectedUser,
-                IsFollowing = false
-            };
-                
-            _profileDBContext.Following.Remove(following);
-            var result = await _profileDBContext.SaveChangesAsync();
-               
-            if (result == 0) 
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
+
+            await using MySqlCommand cmd = new(@"INSERT INTO following (UserGuid, UserName, UserFollowing, IsFollowing)
+                                                VALUES(@userGuid, @userName, @userSelected, 1)", connection);
+
+            cmd.Parameters.Add("@userGuid", MySqlDbType.Guid).Value = profile.UserGuid;
+            cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = profile.UserName;
+            cmd.Parameters.Add("@userSelected", MySqlDbType.Guid).Value = profile.SelectedUser;
+
+            var result = await cmd.ExecuteNonQueryAsync(ctx);
+
+            if (result == 0)
                 throw new Exception("Data query was executed but no change was made");
-
         }
 
-       
+
+        public async Task UnFollowUser(ProfileDto profile, CancellationToken ctx)
+        {
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
+
+            await using MySqlCommand cmd = new(@"DELETE FROM following WHERE UserGuid = @userGuid AND UserFollowing = @selectedUser", connection);
+            cmd.Parameters.Add("@userGuid", MySqlDbType.Guid).Value = profile.UserGuid;
+            cmd.Parameters.Add("@selectedUser", MySqlDbType.Guid).Value = profile.SelectedUser;
+
+            var result = await cmd.ExecuteNonQueryAsync(ctx);
+            if (result == 0)
+                throw new Exception("Data query was executed but no change was made");
+        }
+
+
     }
 }

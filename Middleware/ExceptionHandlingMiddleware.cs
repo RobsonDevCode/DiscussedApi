@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using MailKit;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using MySqlConnector;
 using NLog;
 using System.Security.Cryptography;
 
@@ -42,6 +44,22 @@ namespace DiscussedApi.Middleware
                     Title = "Bad Request",
                     Detail = ex.Message,
                 };
+
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsJsonAsync(problemDetails);
+            }
+            catch(ServiceNotAuthenticatedException ex)
+            {
+                _logger.Error(ex, ex.Message);
+                var problemDetails = new ProblemDetails()
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Unauthorized",
+                    Detail = ex.Message
+                };
+
+                context.Response.StatusCode= StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(problemDetails);
             }
             catch (CryptographicException ex)
             {
@@ -49,6 +67,12 @@ namespace DiscussedApi.Middleware
             }
             catch (Exception ex)
             {
+                //handle database errors more securely as it could contain sensitive info
+                if(ex is MySqlException)
+                {
+                    await Status500WithNoDetails(context, ex);
+                }
+
                 await Status500(context, ex);
             }
         }
@@ -60,7 +84,22 @@ namespace DiscussedApi.Middleware
             {
                 Status = StatusCodes.Status500InternalServerError,
                 Title = "Server Error",
-                Detail = ex.Message //remove in prd
+                Detail = ex.Message 
+            };
+
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            await context.Response.WriteAsJsonAsync(problemDetails);
+        }
+
+        private async Task Status500WithNoDetails(HttpContext context, Exception ex)
+        {
+            _logger.Error(ex, ex.Message);
+
+            var problemDetails = new ProblemDetails()
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Server Error",
             };
 
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;

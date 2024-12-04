@@ -6,10 +6,10 @@ namespace DiscussedApi.Reopisitory.Profiles
 {
     public interface IProfileDataAccess
     {
-        Task<List<Guid?>> GetUserFollowing(Guid userGuid);
+        Task<List<Guid?>> GetUserFollowing(Guid userGuid, CancellationToken ctx);
 
-        Task FollowUser(ProfileDto profile);
+        Task FollowUser(ProfileDto profile, CancellationToken ctx);
 
-        Task UnFollowUser(ProfileDto profile);
+        Task UnFollowUser(ProfileDto profile, CancellationToken ctx);
     }
 }

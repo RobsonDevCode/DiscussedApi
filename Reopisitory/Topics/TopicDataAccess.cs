@@ -1,7 +1,9 @@
-﻿using DiscussedApi.Configuration;
-using DiscussedApi.Data.Topics;
+﻿using DiscussedApi.Abstraction;
+using DiscussedApi.Configuration;
 using DiscussedApi.Models.Topic;
+using DiscussedApi.Reopisitory.DataMapping;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using NLog;
 
 namespace DiscussedApi.Reopisitory.Topics
@@ -9,55 +11,66 @@ namespace DiscussedApi.Reopisitory.Topics
     public class TopicDataAccess : ITopicDataAccess
     {
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
-        public async Task<Topic> GenerateTopicForTodayAsync()
+        private readonly IMySqlConnectionFactory _mySqlConnectionFactory;
+        private readonly IRepositoryMapper _repositoryMapper;
+        public TopicDataAccess(IMySqlConnectionFactory mySqlConnectionFactory, IRepositoryMapper repositoryMapper)
         {
-            try
-            {
-                using (var topicDb = new TopicDBContext())
-                {
-                    var topic = await topicDb.Topics.SingleOrDefaultAsync(t => t.IsActive);
+            _mySqlConnectionFactory = mySqlConnectionFactory;
+            _repositoryMapper = repositoryMapper;
+        }
 
-                    _logger.Info($"Topic {topic.Name ?? ""} has been set on {DateTime.UtcNow}");
+        public async Task<Topic> GenerateTopicForTodayAsync(CancellationToken ctx)
+        {
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
 
-                    return (topic == null) ? throw new Exception("Error topic returned null, no topic has been set active") : topic;
-                }
-            }
-            catch(Exception ex)
+            await using MySqlCommand cmd = new(@"SELECT TopicId, Name, DtCreated, Category, IsActive, Likes  FROM topics WHERE isActive = true LIMIT 1", connection);
+
+            await using MySqlDataReader reader = await cmd.ExecuteReaderAsync(ctx);
+
+            Topic topic = new Topic();
+            while (await reader.ReadAsync())
             {
-                _logger.Error(ex, ex.Message);
-                throw;
+                topic = _repositoryMapper.MapTopic(reader);
             }
+
+            if (topic == null)
+                throw new Exception("Failed when trying to get active topic");
+
+            _logger.Info($"Topic {topic.Name ?? ""} has been set on {DateTime.UtcNow}");
+
+            return topic;
+
         }
 
         //TODO move into a stored procedure and have it on some kind of scheduled task
-        public async Task UpdateTopicStatusAsync()
+        public async Task UpdateTopicStatusAsync(CancellationToken ctx)
         {
-            try
-            {
-                using (var topicDb = new TopicDBContext())
-                {
-                    //set the current result to inactive 
-                    var result = await topicDb.Topics
-                                              .Where(x => x.IsActive)
-                                              .ExecuteUpdateAsync(x => x
-                                              .SetProperty(t => t.IsActive, false));
-                    if (result == 0)
-                        throw new Exception("Deactivate Query Excecuted but no value changed");
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
 
-                    //set the new topic by day as active
-                    result = await topicDb.Topics
-                                         .Where(t => t.DtCreated == Settings.DateToGetTopic)
-                                         .ExecuteUpdateAsync(x => x.SetProperty(t => t.IsActive, true));
-
-                    if (result == 0)
-                        throw new Exception("Set to Is ActiveQuery Excecuted but no value changed");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            await SetCurrentTopicToInActive(connection, ctx);
+            await SetNewActiveTopic(connection, ctx);
         }
+
+        private async Task SetCurrentTopicToInActive(MySqlConnection connection, CancellationToken ctx)
+        {
+            await using MySqlCommand cmd = new MySqlCommand(@"UPDATE topics SET IsActive = 0 WHERE IsActive = 1;", connection);
+            var result = await cmd.ExecuteNonQueryAsync();
+
+            if (result == 0)
+                throw new Exception("Deactivate Query Excecuted but no value changed");
+        }
+
+        private async Task SetNewActiveTopic(MySqlConnection connection, CancellationToken ctx)
+        {
+            await using MySqlCommand cmd = new MySqlCommand(@"UPDATE topics SET IsActive = 1 WHERE DtCreated = @dateToGetTopic;");
+            cmd.Parameters.Add(@"dateToGetTopic", MySqlDbType.DateTime).Value = Settings.DateToGetTopic;
+
+            var result = await cmd.ExecuteNonQueryAsync();
+            if (result == 0)
+                throw new Exception("Set to Is ActiveQuery Excecuted but no value changed");
+        }
+
     }
 }

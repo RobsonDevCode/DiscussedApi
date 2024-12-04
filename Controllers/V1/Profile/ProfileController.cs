@@ -19,28 +19,30 @@ namespace DiscussedApi.Controllers.V1.Profile
             _profileProcessing = profileProcessing;
         }
 
-
+        [Authorize]
         [HttpPost("follow")]
-        public async Task<IActionResult> FollowUser(ProfileDto followUser, [FromServices] IValidator<ProfileDto> validator)
+        public async Task<IActionResult> FollowUser(ProfileDto followUser, [FromServices] IValidator<ProfileDto> validator, CancellationToken ctx)
         {
-            var validateRequest = await Validator<ProfileDto>.ValidationAsync(followUser, validator);
+            var failedValidation = await Validator<ProfileDto>.TryValidateRequest(followUser, validator);
 
-            if (validateRequest.FaliedValidation != null) return ValidationProblem(validateRequest.FaliedValidation);
+            if (failedValidation != null) 
+                return ValidationProblem(failedValidation);
 
-            await _profileProcessing.FollowUser(followUser);
+            await _profileProcessing.FollowUser(followUser, ctx);
 
             return Ok();
         }
 
         [Authorize]
         [HttpPost("unfollow")]
-        public async Task<IActionResult> UnfollowUser(ProfileDto unfollow, [FromServices] IValidator<ProfileDto> validator)
+        public async Task<IActionResult> UnfollowUser(ProfileDto unfollow, [FromServices] IValidator<ProfileDto> validator, CancellationToken ctx)
         {
-            var validateRequest = await Validator<ProfileDto>.ValidationAsync(unfollow, validator);
+            var failedValidation = await Validator<ProfileDto>.TryValidateRequest(unfollow, validator);
 
-            if (validateRequest.FaliedValidation != null) return ValidationProblem(validateRequest.FaliedValidation);
+            if (failedValidation != null) 
+                return ValidationProblem(failedValidation);
 
-            await _profileProcessing.UnfollowUser(unfollow);
+            await _profileProcessing.UnfollowUser(unfollow, ctx);
 
             return Ok();
 

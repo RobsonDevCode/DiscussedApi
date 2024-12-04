@@ -1,14 +1,15 @@
 ﻿using DiscussedApi.Models.Comments;
 using DiscussedApi.Models.Comments.Replies;
+using DiscussedApi.Models.Topic;
 using MySqlConnector;
 using Newtonsoft.Json;
 using System.ComponentModel.Design;
 
 namespace DiscussedApi.Reopisitory.DataMapping
 {
-    public static class RepositoryMappers
+    public class RepositoryMappers : IRepositoryMapper
     {
-        public static List<Reply> MapReplies(MySqlDataReader reader)
+        public List<Reply> MapReplies(MySqlDataReader reader)
         {
             var repliesJson = reader["Replies"]?.ToString();
 
@@ -23,7 +24,7 @@ namespace DiscussedApi.Reopisitory.DataMapping
             return result;
         }
 
-        public static Comment MapComment(MySqlDataReader reader)
+        public Comment MapComment(MySqlDataReader reader)
         {
             return new Comment()
             {
@@ -38,6 +39,19 @@ namespace DiscussedApi.Reopisitory.DataMapping
                 UserName = reader.GetString("UserName"),
                 Reference = reader.GetInt32("Reference"),
                 Interactions = reader.GetInt32("Interactions")
+            };
+        }
+
+        public Topic MapTopic(MySqlDataReader reader)
+        {
+            return new Topic()
+            {
+                Id = Guid.TryParse(reader["TopicId"].ToString(), out Guid topicId) ? topicId : Guid.Empty,
+                Name = reader.GetString("Name"),
+                DtCreated = reader.GetDateOnly("DtCreated"),
+                Category = reader.GetString("Category"),   
+                IsActive = reader.GetBoolean("IsActive"),
+                Likes = reader.GetInt64("Likes")
             };
         }
     }

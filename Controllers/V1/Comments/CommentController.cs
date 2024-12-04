@@ -105,6 +105,9 @@ namespace DiscussedApi.Controllers.V1.Comments
             [Required] string topicName,
             string? encryptedToken, CancellationToken ctx)
         {
+            using var timeOutCs = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            using var linkedCs = CancellationTokenSource.CreateLinkedTokenSource(ctx, timeOutCs.Token);
+
             //set token to null 
             string key = $"{userId}-following-key";
             long? nextPageToken = null;
@@ -150,12 +153,12 @@ namespace DiscussedApi.Controllers.V1.Comments
         public async Task<IActionResult> PostCommentAsync([FromBody] NewCommentDto postComment, CancellationToken ctx,
             [FromServices] IValidator<NewCommentDto> validator)
         {
-            //validate request
-            var validate = await Validator<NewCommentDto>.ValidationAsync(postComment, validator);
+            //failedValidation request
+            var failedValidation = await Validator<NewCommentDto>.TryValidateRequest(postComment, validator);
 
-            if (validate.FaliedValidation != null) return ValidationProblem(validate.FaliedValidation);
+            if (failedValidation != null) return ValidationProblem(failedValidation);
 
-            //validate is user calling is an active account, this slows system down but its an extra saftey net 
+            //failedValidation is user calling is an active account, this slows system down but its an extra saftey net 
             if (await _userManager.FindByIdAsync(postComment.UserId.ToString()) == null)
             {
                 _logger.Error("Error trying to post comment with User id that doesnt exist");
@@ -166,6 +169,7 @@ namespace DiscussedApi.Controllers.V1.Comments
 
             return Created();
         }
+
 
         // ********** PUT And PATCH COMMANDS **********
 
@@ -184,12 +188,12 @@ namespace DiscussedApi.Controllers.V1.Comments
                                                                  [FromServices] IValidator<LikeCommentDto> validator,
                                                                  CancellationToken ctx)
         {
-            //validate request
-            var validate = await Validator<LikeCommentDto>.ValidationAsync(commentToEdit, validator);
+            //failedValidation request
+            var failedValidation = await Validator<LikeCommentDto>.TryValidateRequest(commentToEdit, validator);
 
-            if (validate.FaliedValidation != null) return ValidationProblem(validate.FaliedValidation);
+            if (failedValidation != null) return ValidationProblem(failedValidation);
 
-            //validate is user calling is an active account, this slows system down but its an extra saftey net 
+            //failedValidation is user calling is an active account, this slows system down but its an extra saftey net 
             if (await _userManager.FindByIdAsync(commentToEdit.UserId.ToString()) == null)
             {
                 _logger.Error("Error trying to like comment with User id that doesnt exist");
@@ -204,6 +208,7 @@ namespace DiscussedApi.Controllers.V1.Comments
 
         }
 
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -212,10 +217,10 @@ namespace DiscussedApi.Controllers.V1.Comments
                                                                  IValidator<UpdateCommentDto> validator,
                                                                  CancellationToken ctx)
         {
-            var validate = await Validator<UpdateCommentDto>.ValidationAsync(updateComment, validator);
+            var failedValidation = await Validator<UpdateCommentDto>.TryValidateRequest(updateComment, validator);
 
-            if (validate.FaliedValidation != null)
-                return ValidationProblem(validate.FaliedValidation);
+            if (failedValidation != null)
+                return ValidationProblem(failedValidation);
 
             Comment? updatedComment = await _commentProcessing.EditCommentContentAsync(updateComment, ctx);
 

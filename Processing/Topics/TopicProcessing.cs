@@ -16,13 +16,13 @@ namespace DiscussedApi.Processing.Topics
         /// GetTopicAsync: Systematic api call made to generate the new Topic at the start of each day
         /// </summary>
         /// <returns></returns>
-        public async Task<Topic> GetTopicAsync()
+        public async Task<Topic> GetTopicAsync(CancellationToken ctx)
         {
             try
             {
-                await _topicDataAccess.UpdateTopicStatusAsync();
+                await _topicDataAccess.UpdateTopicStatusAsync(ctx);
 
-                return  await _topicDataAccess.GenerateTopicForTodayAsync();
+                return  await _topicDataAccess.GenerateTopicForTodayAsync(ctx);
             }
             catch (Exception ex)
             {

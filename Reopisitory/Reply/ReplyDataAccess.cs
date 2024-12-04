@@ -1,32 +1,24 @@
-﻿using Dapper;
-using DiscussedApi.Abstraction;
-using DiscussedApi.Data.UserComments;
-using DiscussedApi.Models.Comments;
+﻿using DiscussedApi.Abstraction;
 using DiscussedApi.Models.Comments.Replies;
 using DiscussedApi.Reopisitory.DataMapping;
 using Discusseddto.CommentDtos.ReplyDtos;
-using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
-using Newtonsoft.Json;
-using NLog;
-using System.Data;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace DiscussedApi.Reopisitory.Replies
 {
     public class ReplyDataAccess : IReplyDataAccess
     {
-        private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         private readonly IMySqlConnectionFactory _mySqlConnectionFactory;
-
-        public ReplyDataAccess(IMySqlConnectionFactory mySqlConnectionFactory)
+        private readonly IRepositoryMapper _repositoryMapper;
+        public ReplyDataAccess(IMySqlConnectionFactory mySqlConnectionFactory, IRepositoryMapper repositoryMapper)
         {
             _mySqlConnectionFactory = mySqlConnectionFactory;
+            _repositoryMapper = repositoryMapper;
         }
 
         public async Task<string> DeleteReplyAsync(Guid replyId, CancellationToken ctx)
         {
-            var sql = @"DELETE FROM replies WHERE id = @replyId;";
+            string sql = @"DELETE FROM replies WHERE id = @replyId;";
 
             await using (MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection())
             {
@@ -34,7 +26,7 @@ namespace DiscussedApi.Reopisitory.Replies
 
                 await using (MySqlCommand cmd = new MySqlCommand(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@replyId", replyId);
+                    cmd.Parameters.Add("@replyId", MySqlDbType.Guid).Value = replyId;
 
                     int result = await cmd.ExecuteNonQueryAsync(ctx);
 
@@ -46,6 +38,21 @@ namespace DiscussedApi.Reopisitory.Replies
             }
         }
 
+        public async Task<string> EditReplyContentAsync(EditReplyContentDto editedLikes, CancellationToken ctx)
+        {
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
+
+            await using MySqlCommand cmd = new(@"UPDATE replies SET content = @content WHERE id = @id", connection);
+            cmd.Parameters.Add("@content", MySqlDbType.VarChar).Value = editedLikes.Content;
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = editedLikes.ReplyId;
+
+            int result = await cmd.ExecuteNonQueryAsync(ctx);
+            if (result == 0)
+                throw new KeyNotFoundException("Reply cannot be found or has been deleted");
+
+            return $"Reply: {editedLikes.ReplyId} content updated";
+        }
 
         public async Task<string> EditReplyLikesAsync(EditReplyLikesDto replyLikesDto, CancellationToken ctx)
         {
@@ -65,10 +72,10 @@ namespace DiscussedApi.Reopisitory.Replies
 
             await using (MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection())
             {
-               await connection.OpenAsync(ctx);
+                await connection.OpenAsync(ctx);
                 await using (MySqlCommand cmd = new(sql, connection))
                 {
-                    cmd.Parameters.AddWithValue("@id", replyLikesDto.ReplyId);
+                    cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = replyLikesDto.ReplyId;
 
                     if (await cmd.ExecuteNonQueryAsync(ctx) == 0)
                         throw new KeyNotFoundException("Reply cannot be found or has been deleted");
@@ -107,7 +114,7 @@ namespace DiscussedApi.Reopisitory.Replies
             await connection.OpenAsync(ctx);
 
             await using MySqlCommand cmd = new(sql, connection);
-            cmd.Parameters.AddWithValue("@commentId", commentId);
+            cmd.Parameters.Add("@commentId", MySqlDbType.Guid).Value = commentId;
             cmd.CommandTimeout = 30;
 
             await using var reader = await cmd.ExecuteReaderAsync(ctx);
@@ -117,8 +124,8 @@ namespace DiscussedApi.Reopisitory.Replies
             {
                 repliesWithComment = new RepliesWithComment()
                 {
-                    Comment = RepositoryMappers.MapComment(reader),
-                    Replies = RepositoryMappers.MapReplies(reader)
+                    Comment = _repositoryMapper.MapComment(reader),
+                    Replies = _repositoryMapper.MapReplies(reader)
                 };
 
             }
@@ -131,40 +138,24 @@ namespace DiscussedApi.Reopisitory.Replies
             string sql = @"INSERT INTO Replies 
                            (Id, CommentId, UserId, UserName, Content, Likes, DtCreated, DtUpdated) 
                            VALUES 
-                           (@Id, @CommentId, @UserId, @UserName, @Content, @Likes, @DtCreated, @DtUpdated)";
+                           (@Id, @CommentId, @UserId, @UserName, @Content, 0, NOW(), NOW())";
 
             await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync(ctx);
 
             await using MySqlCommand cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@Id", reply.Id);
-            cmd.Parameters.AddWithValue("@CommentId", reply.CommentId);
-            cmd.Parameters.AddWithValue("@UserId", reply.UserId);
-            cmd.Parameters.AddWithValue("@UserName", reply.UserName);
-            cmd.Parameters.AddWithValue("@Content", reply.Content);
-            cmd.Parameters.AddWithValue("@Likes", reply.Likes);
-            cmd.Parameters.AddWithValue("@DtCreated", DateTime.UtcNow);
-            cmd.Parameters.AddWithValue("@DtUpdated", DateTime.UtcNow);
+            cmd.Parameters.Add("@Id", MySqlDbType.Guid).Value = reply.Id;
+            cmd.Parameters.Add("@CommentId", MySqlDbType.Guid).Value = reply.CommentId;
+            cmd.Parameters.Add("@UserId", MySqlDbType.Guid).Value = reply.UserId;
+            cmd.Parameters.Add("@UserName", MySqlDbType.VarChar).Value = reply.UserName;
+            cmd.Parameters.Add("@Content", MySqlDbType.VarChar).Value = reply.Content;
 
             int rowsAffected = await cmd.ExecuteNonQueryAsync(ctx);
 
             if (rowsAffected == 0)
                 throw new Exception("Query Excecuted but no updated was made");
         }
-        
-        private List<Reply> MapReplies(MySqlDataReader reader)
-        {
-            var repliesJson = reader["Replies"]?.ToString();
 
-            if (string.IsNullOrEmpty(repliesJson))
-                throw new Exception("Error getting json from reader, when reading replies");
-
-            List<Reply>? result = JsonConvert.DeserializeObject<List<Reply>>(repliesJson);
-
-            if (result == null)
-                throw new JsonException("Error Deserializing replies json");
-
-            return result;
-        }
+       
     }
 }

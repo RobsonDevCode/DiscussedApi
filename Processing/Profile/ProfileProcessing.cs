@@ -16,55 +16,31 @@ namespace DiscussedApi.Processing.Profile
 
         public ProfileProcessing(IProfileDataAccess profileDataAccess, UserManager<User> userManager)
         {
-             _profileDateAccess = profileDataAccess;
+            _profileDateAccess = profileDataAccess;
             _userManager = userManager;
         }
 
-        public async Task FollowUser(ProfileDto profile)
+        public async Task FollowUser(ProfileDto profile, CancellationToken ctx)
         {
-            try
-            {
-                if (!await DoesUserExist(profile)) throw new Exception("User deleted their account or cannot be followed!");
+            if (!await DoesUserExist(profile, ctx)) throw new Exception("User deleted their account or cannot be followed!");
 
-                await _profileDateAccess.FollowUser(profile); 
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-                throw; 
-            }
+            await _profileDateAccess.FollowUser(profile, ctx);
         }
 
-        public async Task UnfollowUser(ProfileDto profile)
+        public async Task UnfollowUser(ProfileDto profile, CancellationToken ctx)
         {
-            try
-            {
-                if (!await DoesUserExist(profile)) throw new Exception("User deleted their account or cannot be followed!");
+            if (!await DoesUserExist(profile, ctx)) throw new Exception("User deleted their account or cannot be followed!");
 
-                await _profileDateAccess.UnFollowUser(profile);
-            }
-            catch(Exception ex)
-            {
-                _logger.Error(ex);
-                throw;
-            }
-            throw new NotImplementedException();
+            await _profileDateAccess.UnFollowUser(profile, ctx);
         }
 
-        public async Task<bool> DoesUserExist(ProfileDto profile)
+        public async Task<bool> DoesUserExist(ProfileDto profile, CancellationToken ctx)
         {
-            try
-            {
-                if (profile == null) throw new ArgumentNullException($"{nameof(profile)} is cannot be null when checking if user Exists");
+            if (profile == null) throw new ArgumentNullException($"{nameof(profile)} is cannot be null when checking if user Exists");
 
-                bool exists = (await _userManager.Users.CountAsync(x => x.Id == profile.SelectedUser.ToString()) == 0) ? false : true;
+            bool exists = (await _userManager.Users.CountAsync(x => x.Id == profile.SelectedUser.ToString(), cancellationToken: ctx) == 0) ? false : true;
 
-                return exists;
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            return exists;
         }
     }
 }

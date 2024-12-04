@@ -6,7 +6,7 @@ namespace DiscussedApi.Common.Validations
 {
     public static class Validator<T> where T : class
     {
-        public async static Task<(ValidationResult? SuccesfulValidation, ModelStateDictionary? FaliedValidation)> ValidationAsync(T request, IValidator<T> validator)
+        public async static Task<ModelStateDictionary?> TryValidateRequest(T request, IValidator<T> validator)
         {
             var validationResult = await validator.ValidateAsync(request);
 
@@ -19,10 +19,10 @@ namespace DiscussedApi.Common.Validations
                     modelStateDictionary.AddModelError(failure.PropertyName, failure.ErrorMessage);
                 }
 
-                return (null, modelStateDictionary);
+                return modelStateDictionary;
             }
 
-            return (validationResult, null);
+            return null;
         }
     }
 }

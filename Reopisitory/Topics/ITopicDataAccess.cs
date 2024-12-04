@@ -4,7 +4,7 @@ namespace DiscussedApi.Reopisitory.Topics
 {
     public interface ITopicDataAccess
     {
-        Task<Topic> GenerateTopicForTodayAsync();
-        Task UpdateTopicStatusAsync();
+        Task<Topic> GenerateTopicForTodayAsync(CancellationToken ctx);
+        Task UpdateTopicStatusAsync(CancellationToken ctx);
     }
 }

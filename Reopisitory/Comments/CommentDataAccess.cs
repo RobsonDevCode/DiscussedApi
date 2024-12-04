@@ -1,6 +1,5 @@
 ﻿using DiscussedApi.Abstraction;
 using DiscussedApi.Configuration;
-using DiscussedApi.Data.UserComments;
 using DiscussedApi.Models.Comments;
 using DiscussedApi.Models.Profiles;
 using DiscussedApi.Models.UserInfo;
@@ -13,18 +12,19 @@ using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using NLog;
 using System.Collections.Immutable;
+using System.Threading;
 
 namespace DiscussedApi.Reopisitory.Comments
 {
     public class CommentDataAccess : ICommentDataAccess
     {
-        private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         private readonly IMySqlConnectionFactory _mySqlConnectionFactory;
-        private readonly CommentsDBContext _commentContext;
-        public CommentDataAccess(CommentsDBContext context, IMySqlConnectionFactory mySqlConnectionFactory)
+        private readonly IRepositoryMapper _repositoryMapper;
+        public CommentDataAccess(IMySqlConnectionFactory mySqlConnectionFactory,
+            IRepositoryMapper repositoryMapper)
         {
-            _commentContext = context;
             _mySqlConnectionFactory = mySqlConnectionFactory;
+            _repositoryMapper = repositoryMapper;
         }
 
         // ******** GET Commands ******** 
@@ -38,11 +38,12 @@ namespace DiscussedApi.Reopisitory.Comments
                                       TopicId, Interactions, UserName, Reference
                                       FROM comments WHERE id = @id", connection);
 
-            cmd.Parameters.AddWithValue("@id", commentId);
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = commentId;
+
             await using MySqlDataReader reader = await cmd.ExecuteReaderAsync(ctx);
-            while(await reader.ReadAsync(ctx))
+            while (await reader.ReadAsync(ctx))
             {
-                return RepositoryMappers.MapComment(reader);
+                return _repositoryMapper.MapComment(reader);
             }
 
             return null;
@@ -60,20 +61,21 @@ namespace DiscussedApi.Reopisitory.Comments
                                       WHERE UserId = @userId 
                                       AND DtCreated >= @dtFrom 
                                       AND TopicId = @topicId
-                                      AND Reference > @nextPageToken LIMIT @commentMax 
-                                      ORDER BY interactions DESC, DtUpdated desc;"
-                                       ;
+                                      AND Reference > @nextPageToken
+                                      ORDER BY interactions DESC, DtUpdated desc 
+                                      LIMIT @commentMax;";
 
 
             await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync(ctx);
 
             await using MySqlCommand cmd = new MySqlCommand(sql, connection);
-            cmd.Parameters.AddWithValue("@userId", userId);
-            cmd.Parameters.AddWithValue("@dtFrom", Settings.TimeToGetCommentFrom);
-            cmd.Parameters.AddWithValue("@topicId", topic);
-            cmd.Parameters.AddWithValue("@nextPageToken", nextPageToken);
-            cmd.Parameters.AddWithValue("@commentMac", Settings.CommentMax);
+
+            cmd.Parameters.Add("@userId", MySqlDbType.Guid).Value = userId;
+            cmd.Parameters.Add("@dtFrom", MySqlDbType.DateTime).Value = Settings.TimeToGetCommentFrom;
+            cmd.Parameters.Add("@topicId", MySqlDbType.String).Value = topic;
+            cmd.Parameters.Add("@nextPageToken", MySqlDbType.Int64).Value = nextPageToken;
+            cmd.Parameters.Add("@commentMax", MySqlDbType.Int32).Value = Settings.CommentMax;
 
             await using MySqlDataReader reader = await cmd.ExecuteReaderAsync(ctx);
 
@@ -81,7 +83,7 @@ namespace DiscussedApi.Reopisitory.Comments
 
             while (await reader.ReadAsync(ctx))
             {
-                comments.Add(RepositoryMappers.MapComment(reader));
+                comments.Add(_repositoryMapper.MapComment(reader));
             }
 
             if (comments == null)
@@ -99,14 +101,16 @@ namespace DiscussedApi.Reopisitory.Comments
                            FROM comments
                            WHERE TopicId = @topicId AND 
                            Reference > @nextPageToken
-                           ORDER BY interactions DESC, DtUpdated desc;";
+                           ORDER BY interactions DESC, DtUpdated desc LIMIT 100;";
 
             await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
 
             await connection.OpenAsync(ctx);
             await using MySqlCommand cmd = new(sql, connection);
-            cmd.Parameters.AddWithValue("@topicId", topic);
-            cmd.Parameters.AddWithValue("@nextPageToken", (nextPageToken == null) ? 0 : nextPageToken);
+
+            cmd.Parameters.Add("@topicId", MySqlDbType.VarChar).Value = topic;
+            cmd.Parameters.Add("@nextPageToken", MySqlDbType.Int64).Value =
+                (nextPageToken == null) ? 0 : nextPageToken;
 
             await using MySqlDataReader reader = await cmd.ExecuteReaderAsync(ctx);
 
@@ -114,7 +118,7 @@ namespace DiscussedApi.Reopisitory.Comments
 
             while (await reader.ReadAsync())
             {
-                var comment = RepositoryMappers.MapComment(reader);
+                var comment = _repositoryMapper.MapComment(reader);
                 comments.Add(comment);
             }
 
@@ -135,7 +139,7 @@ namespace DiscussedApi.Reopisitory.Comments
 
             await using MySqlCommand cmd =
                 new(@"SELECT COUNT(*)  FROM comments WHERE id = @id;", connection);
-            cmd.Parameters.AddWithValue("@id", commentId);
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = commentId;
 
             object? result = await cmd.ExecuteScalarAsync();
 
@@ -156,7 +160,7 @@ namespace DiscussedApi.Reopisitory.Comments
 
             await using MySqlCommand cmd =
                 new(@"SELECT COUNT(*)  FROM comments WHERE id = @id;", connection);
-            cmd.Parameters.AddWithValue("@id", commentId);
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = commentId;
 
             object? result = await cmd.ExecuteScalarAsync(ctx);
 
@@ -182,11 +186,11 @@ namespace DiscussedApi.Reopisitory.Comments
 
             await using MySqlCommand cmd = new(sql, connection);
 
-            cmd.Parameters.AddWithValue("@id", comment.Id);
-            cmd.Parameters.AddWithValue("@userId", comment.UserId);
-            cmd.Parameters.AddWithValue("@content", comment.Content);
-            cmd.Parameters.AddWithValue("@topicId", comment.TopicId);
-            cmd.Parameters.AddWithValue("@userName", comment.UserName);
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = comment.Id;
+            cmd.Parameters.Add("@userId", MySqlDbType.Guid).Value = comment.UserId;
+            cmd.Parameters.Add("@content", MySqlDbType.VarChar).Value = comment.Content;
+            cmd.Parameters.Add("@topicId", MySqlDbType.VarChar).Value = comment.TopicId;
+            cmd.Parameters.Add("@userName", MySqlDbType.VarChar).Value = comment.UserName;
 
             if (await cmd.ExecuteNonQueryAsync(ctx) == 0)
                 throw new Exception("Query Excecuted but no rows were affected");
@@ -209,11 +213,11 @@ namespace DiscussedApi.Reopisitory.Comments
             }
 
             await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
-            await connection.OpenAsync();
+            await connection.OpenAsync(ctx);
 
             await using MySqlCommand cmd = new(sql, connection);
 
-            cmd.Parameters.AddWithValue("@id", comment.CommentId);
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = comment.CommentId;
 
             await cmd.ExecuteNonQueryAsync(ctx);
 
@@ -233,8 +237,8 @@ namespace DiscussedApi.Reopisitory.Comments
             await connection.OpenAsync(ctx);
 
             await using MySqlCommand cmd = new(@"UPDATE comments SET content = @updatedContent, dtupdated = NOW() WHERE id = @id", connection);
-            cmd.Parameters.AddWithValue("@updatedContent", comment.Content.TrimEnd());
-            cmd.Parameters.AddWithValue("@id", comment.Id);
+            cmd.Parameters.Add("@updatedContent", MySqlDbType.VarChar).Value = comment.Content.TrimEnd();
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = comment.Id;
 
             await cmd.ExecuteNonQueryAsync(ctx); ;
         }
@@ -242,44 +246,41 @@ namespace DiscussedApi.Reopisitory.Comments
         //******** Delete Commands ********
         public async Task DeleteCommentAsyncEndpoint(Guid commentId, CancellationToken ctx)
         {
-            try
-            {
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
 
-                var result = await _commentContext.Comments
-                                        .Where(x => x.Id.Equals(commentId))
-                                        .ExecuteDeleteAsync(ctx);
+            await using MySqlCommand cmd = new(@"DELETE FROM comments WHERE id = @id");
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = commentId;
 
-                //Already in trouble at this point, but atleast we flag and it's now got our attention
-                if (result > 0)
-                    throw new Exception("query resulted in mutiple rows deleted");
-                else if (result == 0)
-                    throw new Exception("query executed but no rows affected");
+            var result = await cmd.ExecuteNonQueryAsync(ctx);
 
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            //Already in trouble at this point, but atleast we flag and it's now got our attention
+            if (result > 0)
+                throw new Exception("query resulted in mutiple rows deleted");
+            else if (result == 0)
+                throw new Exception("query executed but no rows affected");
+
         }
-
 
         //******** private Commands ********
         private async Task<bool> validateUserPostedComment(Guid userId, Guid commentId, CancellationToken ctx)
         {
-            try
-            {
-                return (await _commentContext.Comments
-                                                .Where(x => x.Id.Equals(commentId) && x.UserId.Equals(userId))
-                                                .CountAsync(ctx) == 1) ? true : false;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync(ctx);
+
+            string sql = @"SELECT COUNT(*) FROM comments WHERE id = @commentId AND userId = @userid";
+
+            await using MySqlCommand cmd = new(sql, connection);
+            cmd.Parameters.Add("@commentId", MySqlDbType.Guid).Value = commentId;
+            cmd.Parameters.Add("@userid", MySqlDbType.Guid).Value = userId;
+
+
+            var result = await cmd.ExecuteScalarAsync(ctx);
+            var count = result == null ? 0 : Convert.ToInt32(result);
+
+            return count == 1;
         }
 
-       
+
     }
 }

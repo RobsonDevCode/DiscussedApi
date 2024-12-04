@@ -43,7 +43,7 @@ namespace DiscussedApi.Processing.Comments
         {
             try
             {
-                List<Guid?> userFollowing = await _profileDataAccess.GetUserFollowing(userId);
+                List<Guid?> userFollowing = await _profileDataAccess.GetUserFollowing(userId, ctx);
 
                 //if user following is null check if they are a new user and display content based on prompts selected
                 if (userFollowing.Count == 0 || userFollowing == null)
@@ -100,20 +100,12 @@ namespace DiscussedApi.Processing.Comments
         }
         public async Task<Comment?> EditCommentContentAsync(UpdateCommentDto updateComment, CancellationToken ctx)
         {
-            try
-            {
-                if (!await _commentDataAccess.IsCommentValid(updateComment.Id, ctx))
-                    throw new KeyNotFoundException("Comment not found or has been deleted");
+            if (!await _commentDataAccess.IsCommentValid(updateComment.Id, ctx))
+                throw new KeyNotFoundException("Comment not found or has been deleted");
 
-                await _commentDataAccess.UpdateCommentContentAsync(updateComment, ctx);
+            await _commentDataAccess.UpdateCommentContentAsync(updateComment, ctx);
 
-                return await _commentDataAccess.GetComment(updateComment.Id, ctx);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            return await _commentDataAccess.GetComment(updateComment.Id, ctx);
         }
         public async Task<string> LikeOrDislikeCommentAsync(LikeCommentDto commentToEditDto, CancellationToken ctx)
         {
@@ -124,19 +116,11 @@ namespace DiscussedApi.Processing.Comments
         }
         public async Task DeleteCommentAsync(Guid commentId, CancellationToken ctx)
         {
-            try
-            {
-                if (!await _commentDataAccess.IsCommentValid(commentId, ctx))
-                    throw new KeyNotFoundException("Comment not found or has been deleted already");
+            if (!await _commentDataAccess.IsCommentValid(commentId, ctx))
+                throw new KeyNotFoundException("Comment not found or has been deleted already");
 
-                await _commentDataAccess.DeleteCommentAsyncEndpoint(commentId, ctx);
-                _logger.Info($"Comment {commentId} has been deleted");
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            await _commentDataAccess.DeleteCommentAsyncEndpoint(commentId, ctx);
+            _logger.Info($"Comment {commentId} has been deleted");
         }
     }
 }

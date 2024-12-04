@@ -19,9 +19,9 @@ namespace DiscussedApi.Controllers.V1.Topic
 
         [Authorize(Roles = "Admin")]
         [HttpGet("generate")]
-        public async Task<IActionResult> GenerateTopicAsync()
+        public async Task<IActionResult> GenerateTopicAsync(CancellationToken ctx)
         {
-            return Ok(await _topicProcessing.GetTopicAsync());
+            return Ok(await _topicProcessing.GetTopicAsync(ctx));
         }
 
 

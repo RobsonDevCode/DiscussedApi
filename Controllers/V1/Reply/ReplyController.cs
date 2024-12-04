@@ -42,13 +42,16 @@ namespace DiscussedApi.Controllers.V1.Reply
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+
         [HttpPost("post")]
         public async Task<IActionResult> PostResultAsync([FromBody] PostReplyDto postReplyDto, [FromServices] IValidator<PostReplyDto> validator,
             CancellationToken ctx)
         {
-            var valid = await Validator<PostReplyDto>.ValidationAsync(postReplyDto, validator);
+            var failedValidation = await Validator<PostReplyDto>.TryValidateRequest(postReplyDto, validator);
 
-            if (valid.FaliedValidation != null) return ValidationProblem(valid.FaliedValidation);
+            if (failedValidation != null) 
+                return ValidationProblem(failedValidation);
 
             if (!await _commentDataAccess.IsCommentValid(postReplyDto.CommentId, ctx))
                 return BadRequest("error while replying to comment, comment cannot be found or has been deleted!");
@@ -61,6 +64,7 @@ namespace DiscussedApi.Controllers.V1.Reply
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
         [HttpGet("get/{commentId}")]
         public async Task<IActionResult> GetRepliesAsync([Required] Guid commentId, [FromQuery(Name = "nextpage_token")] string? encyptedNextPageToken, CancellationToken ctx)
         {
@@ -99,15 +103,17 @@ namespace DiscussedApi.Controllers.V1.Reply
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+
         [HttpPatch("edit/likes")]
         public async Task<IActionResult> UpdateReplyLikes([FromBody] EditReplyLikesDto editReplyLikesDto,
             CancellationToken ctx,
             [FromServices] IValidator<EditReplyLikesDto> validator)
         {
-            var validate = await Validator<EditReplyLikesDto>.ValidationAsync(editReplyLikesDto, validator);
+            var failedValidation = await Validator<EditReplyLikesDto>.TryValidateRequest(editReplyLikesDto, validator);
 
-            if (validate.FaliedValidation != null)
-                return ValidationProblem(validate.FaliedValidation);
+            if(failedValidation != null)
+                return ValidationProblem(failedValidation);
 
             if (await _userManager.FindByIdAsync(editReplyLikesDto.UserId.ToString()) == null)
             {
@@ -116,6 +122,23 @@ namespace DiscussedApi.Controllers.V1.Reply
             }
 
             return Ok(await _replyProcessing.EditReplyLikesAsync(editReplyLikesDto, ctx));
+        }
+
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpPatch("edit/content")]
+        public async Task<IActionResult> EditReplyContent([FromBody] EditReplyContentDto editedReply, 
+            [FromServices]IValidator<EditReplyContentDto> validator,
+            CancellationToken ctx)
+        {
+            var failedValidation = await Validator<EditReplyContentDto>.TryValidateRequest(editedReply, validator);
+            if (failedValidation != null)
+                return ValidationProblem(failedValidation);
+
+            return Ok(await _replyProcessing.EditReplyContent(editedReply, ctx));
         }
 
         [Authorize]

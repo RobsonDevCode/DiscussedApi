@@ -10,7 +10,6 @@ using DiscussedApi.Services.Email;
 using DiscussedApi.Services.Tokens;
 using System.Text;
 using DiscussedApi.Data.Identity;
-using DiscussedApi.Data.UserComments;
 using NLog;
 using NLog.Extensions.Logging;
 using NLog.Web;
@@ -28,7 +27,7 @@ using DiscussedApi.Processing.Replies;
 using DiscussedApi.Reopisitory.Replies;
 using DiscussedApi.Middleware;
 using DiscussedApi.Abstraction;
-using MySqlConnector;
+using DiscussedApi.Reopisitory.DataMapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,11 +44,6 @@ Settings.Initialize(builder.Configuration);
 
 //Entity Framework
 builder.Services.AddDbContext<ApplicationIdentityDBContext>(options =>
-{
-    options.UseMySql(Settings.ConnectionString.UserInfo, ServerVersion.AutoDetect(Settings.ConnectionString.UserInfo));
-});
-
-builder.Services.AddDbContext<CommentsDBContext>(options =>
 {
     options.UseMySql(Settings.ConnectionString.UserInfo, ServerVersion.AutoDetect(Settings.ConnectionString.UserInfo));
 });
@@ -131,7 +125,6 @@ builder.Services.AddSwaggerGen(g =>
 });
 
 //Dependcy Injections
-builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IUserProcessing, UserProcessing>();
 builder.Services.AddTransient<ICommentProcessing, CommentProcessing>();
@@ -143,11 +136,26 @@ builder.Services.AddTransient<ITopicProcessing, TopicProcessing>();
 builder.Services.AddTransient<ITopicDataAccess, TopicDataAccess>();
 builder.Services.AddTransient<IReplyProcessing, ReplyProcessing>();
 builder.Services.AddTransient<IReplyDataAccess, ReplyDataAccess>();
+builder.Services.AddTransient<IRepositoryMapper, RepositoryMappers>();
 builder.Services.AddScoped<IMySqlConnectionFactory, MySqlConnectionFactory>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 builder.Services.AddMemoryCache();
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        policy =>
+        {
+            policy.WithOrigins(" http://localhost:5173/")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        });
+});
 
 var app = builder.Build();
 
