@@ -35,7 +35,7 @@ namespace DiscussedApi.Processing.Comments
                 if (!nextPageToken.HasValue)
                     throw new CryptographicException("next page token returned null after attempting decrypting");
 
-                return (baseKey + $"-{nextPageToken}", nextPageToken);// adjust the key so we dont get previous cache
+                return ($"{baseKey}-{nextPageToken}", nextPageToken);// adjust the key so we dont get previous cache
 
             }
             catch(CryptographicException ex)

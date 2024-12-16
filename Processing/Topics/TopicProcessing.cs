@@ -6,11 +6,11 @@ namespace DiscussedApi.Processing.Topics
 {
     public class TopicProcessing : ITopicProcessing
     {
-        private readonly ITopicDataAccess _topicDataAccess; 
+        private readonly ITopicDataAccess _topicDataAccess;
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         public TopicProcessing(ITopicDataAccess topicDataAccess)
         {
-            _topicDataAccess = topicDataAccess;            
+            _topicDataAccess = topicDataAccess;
         }
         /// <summary>
         /// GetTopicAsync: Systematic api call made to generate the new Topic at the start of each day
@@ -18,17 +18,9 @@ namespace DiscussedApi.Processing.Topics
         /// <returns></returns>
         public async Task<Topic> GetTopicAsync(CancellationToken ctx)
         {
-            try
-            {
-                await _topicDataAccess.UpdateTopicStatusAsync(ctx);
+          //  await _topicDataAccess.UpdateTopicStatusAsync(ctx);
 
-                return  await _topicDataAccess.GenerateTopicForTodayAsync(ctx);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                throw;
-            }
+            return await _topicDataAccess.GenerateTopicForTodayAsync(ctx);
         }
     }
 }

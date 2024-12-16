@@ -16,6 +16,8 @@
         public string Key => _config.GetValue<string>($"JwtSettings:{nameof(Key)}") ??
             throw new NullReferenceException($"Trouble loading confiration for {nameof(Key)}");
 
+        public int JwtExpiresFrom => _config.GetValue<int>($"JwtSettings:{nameof(JwtExpiresFrom)}");
+        public int RefreshTokenExpiresFrom => _config.GetValue<int>($"JwtSettings:{nameof(RefreshTokenExpiresFrom)}");
 
     }
 }

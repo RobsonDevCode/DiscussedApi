@@ -11,6 +11,11 @@ using DiscussedDto.User;
 using System.ComponentModel.DataAnnotations;
 using NLog;
 using DiscussedApi.Models.UserInfo;
+using DiscussedApi.Models.Auth;
+using System.Security.Authentication;
+using DiscussedApi.Authenctication;
+using DiscussedApi.Models.Error;
+using DiscussedApi.Extentions;
 
 namespace DiscussedApi.Controllers.V1.UserController
 {
@@ -23,14 +28,17 @@ namespace DiscussedApi.Controllers.V1.UserController
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly IUserProcessing _userProcessing;
+        private readonly IEncryptor _encryptor;
         private NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
-        public UserController(UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager, IEmailSender emailSender, IUserProcessing userProcessing)
+        public UserController(UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager,
+            IEmailSender emailSender, IUserProcessing userProcessing, IEncryptor encryptor)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _userProcessing = userProcessing;
+            _encryptor = encryptor;
         }
 
 #if DEBUG
@@ -38,8 +46,7 @@ namespace DiscussedApi.Controllers.V1.UserController
         public async Task<IActionResult> AutoLogin()
         {
             var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == "robsonsTester@gmail.com");
-
-            return Ok(new NewUserDto
+            return Ok(new UserDto
             {
                 UserName = user.UserName,
                 Email = user.Email,
@@ -52,8 +59,8 @@ namespace DiscussedApi.Controllers.V1.UserController
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto register)
         {
-
-            if (register == null) return BadRequest("Request body sent was null");
+            if (register == null) 
+                return BadRequest("Request body sent was null");
 
             var user = new User
             {
@@ -61,43 +68,52 @@ namespace DiscussedApi.Controllers.V1.UserController
                 Email = register.EmailAddress
             };
 
-            if (string.IsNullOrEmpty(register.Password) || string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
-                return BadRequest("Invalid Password Or Username/Email");
+            if (string.IsNullOrEmpty(register.Password))
+                return BadRequest(new { error = new ErrorResponse("Password is cant be empty") });
 
-            var createcUser = await _userManager.CreateAsync(user, register.Password);
+            if (string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
+                return BadRequest(new { error = new ErrorResponse("Invalid Username or Email") });
 
-            if (createcUser.Succeeded)
+            if (await _userProcessing.UserAlreadyExists(user.Email))
+                return BadRequest(new { error = new ErrorResponse("Account connected to this email already exists") });
+
+            var password = await _encryptor.DecryptPassword(register.Password, register.KeyId);
+
+            if (string.IsNullOrEmpty(password))
+                return StatusCode(500);
+            
+            var createdUser = await _userManager.CreateAsync(user, password);
+            if (!createdUser.Succeeded)
             {
-                var roleResult = await _userManager.AddToRoleAsync(user, "User");
-
-                if (roleResult.Succeeded)
+                _logger.Error(createdUser.Errors);
+                return BadRequest(new
                 {
-                    return Ok(
-                        new NewUserDto
-                        {
-                            UserName = user.UserName,
-                            Email = user.Email,
-                            Token = _tokenService.GeneratedToken(user)
-                        });
-
-                }
-                else
-                {
-                    _logger.Error(roleResult.Errors);
-                    return StatusCode(500, roleResult.Errors);
-                }
-            }
-            else
-            {
-                return BadRequest(createcUser.Errors);
+                    errors = createdUser.Errors
+                });
             }
 
+            var roleResult = await _userManager.AddToRoleAsync(user, "User");
+
+            if (!roleResult.Succeeded)
+            {
+                _logger.Error(roleResult.Errors);
+                return StatusCode(500, new
+                {
+                    errors = roleResult.Errors
+                });
+            }
+            //set jwt first as we dont want decoupled refresh tokens
+            var tokens = await _tokenService.GenerateAndSetJwtAndRefreshToken(user, Response);
+
+            return Ok();
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            if (loginDto == null) return BadRequest("Login Credentials are null");
+            if (loginDto == null)
+                return BadRequest("Login Credentials are null");
 
             User? user = new User();
             if (loginDto.UserNameOrEmail.Contains('@'))
@@ -110,21 +126,31 @@ namespace DiscussedApi.Controllers.V1.UserController
             }
 
             if (user == null || string.IsNullOrWhiteSpace(user.UserName) || string.IsNullOrWhiteSpace(user.Email))
-            {
                 return Unauthorized($"{loginDto.UserNameOrEmail} Is Not A Valid UserName!");
-            }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
-            if (!result.Succeeded) return Unauthorized("Username/Password is incorrect or not foung");
+            if (!result.Succeeded)
+                return Unauthorized("Username/Password is incorrect or not found");
 
-            return Ok(new NewUserDto
+            var tokens = await _tokenService.GenerateAndSetJwtAndRefreshToken(user, Response);
+
+            if (string.IsNullOrWhiteSpace(tokens.Jwt))
+                throw new BuildTokenException($"Error when building JWT when presented user {user.UserName}");
+
+            if (tokens.RefreshToken == null)
+                throw new BuildTokenException($"Error when building Refresh Token when presented user {user.UserName}");
+
+            if (string.IsNullOrWhiteSpace(tokens.RefreshToken.Token))
+                throw new BuildTokenException($"Error when building Refresh Token when presented user {user.UserName}");
+
+            return Ok(new
             {
-                UserName = user.UserName,
-                Email = user.Email,
-                Token = _tokenService.GeneratedToken(user)
+                user_name = user.UserName,
             });
         }
+
+
 
         [Authorize]
         [HttpGet("logout")]
@@ -152,13 +178,12 @@ namespace DiscussedApi.Controllers.V1.UserController
 
             if (!result.Succeeded) return StatusCode(500, result.Errors);
 
-            return Ok(new RecoverUserDto
+            return Ok(new
             {
-                Email = recoverUser.Email
+                success = "password changed"
             });
         }
 
-        [Authorize]
         [HttpPost("mail/confirmation")]
         public async Task<IActionResult> EmailConfirmation([FromBody, EmailAddress] string email)
         {

@@ -6,7 +6,7 @@ using NLog;
 
 namespace DiscussedApi.Controllers.V1.Topic
 {
-    [Route("api/[controller]")]
+    [Route("v1/[controller]")]
     [ApiController]
     public class TopicController : ControllerBase
     {
@@ -17,7 +17,6 @@ namespace DiscussedApi.Controllers.V1.Topic
             _topicProcessing = topicProcessing;
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpGet("generate")]
         public async Task<IActionResult> GenerateTopicAsync(CancellationToken ctx)
         {

@@ -8,3 +8,4 @@ bin/Debug/net8.0/appsettings.json
 bin/Debug/net8.0/DiscussedApi.exe
 bin/Debug/net8.0/Discusseddto.dll
 /obj/Debug
+/bin

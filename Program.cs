@@ -28,6 +28,8 @@ using DiscussedApi.Reopisitory.Replies;
 using DiscussedApi.Middleware;
 using DiscussedApi.Abstraction;
 using DiscussedApi.Reopisitory.DataMapping;
+using DiscussedApi.Reopisitory.Auth;
+using DiscussedApi.Extentions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -137,10 +139,12 @@ builder.Services.AddTransient<ITopicDataAccess, TopicDataAccess>();
 builder.Services.AddTransient<IReplyProcessing, ReplyProcessing>();
 builder.Services.AddTransient<IReplyDataAccess, ReplyDataAccess>();
 builder.Services.AddTransient<IRepositoryMapper, RepositoryMappers>();
+builder.Services.AddTransient<IEncryptor, Encryptor>();
 builder.Services.AddScoped<IMySqlConnectionFactory, MySqlConnectionFactory>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthDataAccess, AuthDataAccess>();
 
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 builder.Services.AddMemoryCache();
 
@@ -150,7 +154,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigins",
         policy =>
         {
-            policy.WithOrigins(" http://localhost:5173/")
+            policy.WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -159,6 +163,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseCors("AllowSpecificOrigins");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

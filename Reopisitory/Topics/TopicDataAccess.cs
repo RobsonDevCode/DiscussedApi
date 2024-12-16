@@ -49,7 +49,7 @@ namespace DiscussedApi.Reopisitory.Topics
             await using MySqlConnection connection = _mySqlConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync(ctx);
 
-            await SetCurrentTopicToInActive(connection, ctx);
+         //   await SetCurrentTopicToInActive(connection, ctx);
             await SetNewActiveTopic(connection, ctx);
         }
 
@@ -64,7 +64,7 @@ namespace DiscussedApi.Reopisitory.Topics
 
         private async Task SetNewActiveTopic(MySqlConnection connection, CancellationToken ctx)
         {
-            await using MySqlCommand cmd = new MySqlCommand(@"UPDATE topics SET IsActive = 1 WHERE DtCreated = @dateToGetTopic;");
+            await using MySqlCommand cmd = new MySqlCommand(@"UPDATE topics SET IsActive = 1 WHERE DtCreated = @dateToGetTopic;", connection);
             cmd.Parameters.Add(@"dateToGetTopic", MySqlDbType.DateTime).Value = Settings.DateToGetTopic;
 
             var result = await cmd.ExecuteNonQueryAsync();

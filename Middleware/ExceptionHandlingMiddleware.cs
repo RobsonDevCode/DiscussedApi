@@ -1,4 +1,5 @@
-﻿using MailKit;
+﻿using DiscussedApi.Authenctication;
+using MailKit;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
@@ -64,6 +65,10 @@ namespace DiscussedApi.Middleware
             catch (CryptographicException ex)
             {
                 await Status500(context, ex);
+            }
+            catch(BuildTokenException ex)
+            {
+                await Status500WithNoDetails(context, ex);
             }
             catch (Exception ex)
             {

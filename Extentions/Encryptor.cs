@@ -1,16 +1,24 @@
 ﻿using DiscussedApi.Configuration;
+using DiscussedApi.Reopisitory.Auth;
+using MySqlConnector;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace DiscussedApi.Extentions
 {
-    public static class Encryptor
+    public class Encryptor : IEncryptor
     {
+        private readonly IAuthDataAccess _authDataAccess;
+        public Encryptor(IAuthDataAccess authDataAccess) 
+        {
+          _authDataAccess = authDataAccess;
+        }
         private static NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
         public static bool TryDecrpytToken(string encryptedToken, out long? nextpageToken)
         {
             try
             {
-                if(string.IsNullOrEmpty(encryptedToken))
+                if (string.IsNullOrEmpty(encryptedToken))
                 {
                     nextpageToken = null;
                     return false;
@@ -36,16 +44,46 @@ namespace DiscussedApi.Extentions
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex.Message);
                 nextpageToken = null;
                 return false;
-            } 
+            }
 
         }
 
-        public static bool TryEncryptValue(long value, out string encryptedString) 
+        public async Task<string> DecryptPassword(string encyptedPassword, Guid id)
+        {
+            if (string.IsNullOrWhiteSpace(encyptedPassword))
+                throw new ArgumentNullException("Invalid encryption parameters, password can't be null");
+
+            var credentials = await _authDataAccess.GetKeyAndIv(id);
+            if (credentials == null)
+                throw new Exception("Credentails for decrypting password are null");
+
+            string password = string.Empty;
+
+            byte[] encryptedBytes = Convert.FromBase64String(encyptedPassword);
+            byte[] key = Convert.FromBase64String(credentials.Key);
+            byte[] iv = Convert.FromBase64String(credentials.Iv);
+            using (Aes aes = Aes.Create())
+            {
+                ICryptoTransform decryptor = aes.CreateDecryptor(key, iv) ;
+                using (MemoryStream memoryStream = new(encryptedBytes))
+                {
+                    using (CryptoStream cs = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader reader = new(cs))
+                        {
+                            return reader.ReadToEnd();
+                        }
+                    }
+                }
+            }
+        }
+
+        public static bool TryEncryptValue(long value, out string encryptedString)
         {
             try
             {
@@ -71,7 +109,7 @@ namespace DiscussedApi.Extentions
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.Error(ex.Message);
                 encryptedString = "";
@@ -79,18 +117,6 @@ namespace DiscussedApi.Extentions
             }
         }
 
-        public static (string key, string iv) GenerateKeyAndIVStrings()
-        {
-            using (Aes aes = Aes.Create())
-            {
-                aes.GenerateKey();
-                aes.GenerateIV();
 
-                string keyString = Convert.ToBase64String(aes.Key);
-                string ivString = Convert.ToBase64String(aes.IV);
-
-                return (keyString, ivString);
-            }
-        }
     }
 }
