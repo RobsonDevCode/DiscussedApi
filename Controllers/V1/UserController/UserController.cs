@@ -14,8 +14,11 @@ using DiscussedApi.Models.UserInfo;
 using DiscussedApi.Models.Auth;
 using System.Security.Authentication;
 using DiscussedApi.Authenctication;
-using DiscussedApi.Models.Error;
 using DiscussedApi.Extentions;
+using DiscussedApi.Reopisitory.Auth;
+using Discusseddto.Email;
+using DiscussedApi.Models.ApiResponses.Email;
+using DiscussedApi.Models.ApiResponses.Error;
 
 namespace DiscussedApi.Controllers.V1.UserController
 {
@@ -28,16 +31,18 @@ namespace DiscussedApi.Controllers.V1.UserController
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailSender _emailSender;
         private readonly IUserProcessing _userProcessing;
+        private readonly IAuthDataAccess _authDataAccess;
         private readonly IEncryptor _encryptor;
         private NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         public UserController(UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager,
-            IEmailSender emailSender, IUserProcessing userProcessing, IEncryptor encryptor)
+            IEmailSender emailSender, IUserProcessing userProcessing, IAuthDataAccess authDataAccess, IEncryptor encryptor)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _userProcessing = userProcessing;
+            _authDataAccess = authDataAccess;
             _encryptor = encryptor;
         }
 
@@ -56,33 +61,37 @@ namespace DiscussedApi.Controllers.V1.UserController
         }
 #endif
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto register)
         {
-            if (register == null) 
-                return BadRequest("Request body sent was null");
+            if (register == null)
+                return BadRequest("Request body is empty");
+
+            if (string.IsNullOrEmpty(register.Password))
+                return BadRequest(new { error = new ErrorResponse("Password is cant be empty")});
+
+            if (string.IsNullOrEmpty(register.UserName) || string.IsNullOrEmpty(register.EmailAddress))
+                return BadRequest(new { error = new ErrorResponse("Invalid Username or Email") });
+
+            var credentials = await _encryptor.DecryptCredentials(register.EmailAddress, register.Password, register.KeyId);
+
+            if (await _userProcessing.UserAlreadyExists(credentials.Email, register.UserName))
+                return BadRequest(new { error = new ErrorResponse("Account connected to this email already exists") });
+
+            if (string.IsNullOrEmpty(credentials.Password))
+                return StatusCode(500);
 
             var user = new User
             {
                 UserName = register.UserName,
-                Email = register.EmailAddress
+                Email = credentials.Email,
             };
 
-            if (string.IsNullOrEmpty(register.Password))
-                return BadRequest(new { error = new ErrorResponse("Password is cant be empty") });
+            var createdUser = await _userManager.CreateAsync(user, credentials.Password);
 
-            if (string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
-                return BadRequest(new { error = new ErrorResponse("Invalid Username or Email") });
-
-            if (await _userProcessing.UserAlreadyExists(user.Email))
-                return BadRequest(new { error = new ErrorResponse("Account connected to this email already exists") });
-
-            var password = await _encryptor.DecryptPassword(register.Password, register.KeyId);
-
-            if (string.IsNullOrEmpty(password))
-                return StatusCode(500);
-            
-            var createdUser = await _userManager.CreateAsync(user, password);
             if (!createdUser.Succeeded)
             {
                 _logger.Error(createdUser.Errors);
@@ -102,13 +111,14 @@ namespace DiscussedApi.Controllers.V1.UserController
                     errors = roleResult.Errors
                 });
             }
-            //set jwt first as we dont want decoupled refresh tokens
-            var tokens = await _tokenService.GenerateAndSetJwtAndRefreshToken(user, Response);
 
             return Ok();
         }
 
-
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
@@ -125,8 +135,9 @@ namespace DiscussedApi.Controllers.V1.UserController
                 user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == loginDto.UserNameOrEmail);
             }
 
-            if (user == null || string.IsNullOrWhiteSpace(user.UserName) || string.IsNullOrWhiteSpace(user.Email))
-                return Unauthorized($"{loginDto.UserNameOrEmail} Is Not A Valid UserName!");
+            if (user == null)
+                return Unauthorized($"{loginDto.UserNameOrEmail} Is Not A Valid Username!");
+
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
@@ -151,7 +162,7 @@ namespace DiscussedApi.Controllers.V1.UserController
         }
 
 
-
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [Authorize]
         [HttpGet("logout")]
         public async Task<IActionResult> Logout()
@@ -184,18 +195,23 @@ namespace DiscussedApi.Controllers.V1.UserController
             });
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("mail/confirmation")]
-        public async Task<IActionResult> EmailConfirmation([FromBody, EmailAddress] string email)
+        public async Task<IActionResult> EmailConfirmation([FromBody] ConfirmationEmailDto confirmationEmailDto)
         {
-            if (string.IsNullOrWhiteSpace(email)) return BadRequest("Email given was null");
-
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email.ToLower());
-
+            var user = await _userManager.FindByEmailAsync(confirmationEmailDto.Email);
             if (user == null)
-            {
-                _logger.Warn($"Failed to send email confirmation for {email}");
-                return NoContent();
-            }
+                return Unauthorized();
+
+            if (!await _authDataAccess.IsConfirmationCodeCorrect(confirmationEmailDto.ConfirmationCode))
+                return Ok(new EmailConfirmationApiResponse
+                {
+                    Success = false,
+                    Message = "Incorrect Confirmation Code given"
+                });
 
             user.EmailConfirmed = true;
             var result = await _userManager.UpdateAsync(user);
@@ -206,7 +222,11 @@ namespace DiscussedApi.Controllers.V1.UserController
                 return StatusCode(500, result.Errors);
             }
 
-            return Ok();
+            return Ok(new EmailConfirmationApiResponse
+            {
+                Success = true, 
+                Message = "User Email Confirmed"
+            });
         }
 
 

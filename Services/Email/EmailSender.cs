@@ -39,7 +39,7 @@ namespace DiscussedApi.Services.Email
             }
         }
 
-        public async Task<string> GenerateHtmlBodyAsync(EmailType emailType)
+        public async Task<string> GenerateTemplateHtmlBodyAsync(EmailType emailType)
         {
 
             switch(emailType)

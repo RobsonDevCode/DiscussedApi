@@ -20,5 +20,8 @@
         public string ConfirmationBodyFilePath => _config.GetValue<string>($"EmailSenderSetting:{nameof(ConfirmationBodyFilePath)}") ??
          throw new NullReferenceException($"Value for {nameof(ConfirmationBodyFilePath)} hasnt been configured correctly");
 
+        public string ConfirmationSubject = "Account Confirmation";
+
+        public string RecoverySubject = "Recover Account";
     }
 }

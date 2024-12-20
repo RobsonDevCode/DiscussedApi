@@ -6,6 +6,6 @@ namespace DiscussedApi.Services.Email
     public interface IEmailSender
     {
         public Task SendEmailAsync(string email, string subject, string body);
-        public Task<string> GenerateHtmlBodyAsync(EmailType emailType);
+        public Task<string> GenerateTemplateHtmlBodyAsync(EmailType emailType);
     }
 }

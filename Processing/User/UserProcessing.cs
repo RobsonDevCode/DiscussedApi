@@ -30,7 +30,12 @@ namespace DiscussedApi.Processing.UserProcessing
 
         }
 
-        public async Task<bool> UserAlreadyExists(string email) =>
-           await _userManager.FindByEmailAsync(email) != null;
+        public async Task<bool> UserAlreadyExists(string email, string username)
+        {
+            if(await _userManager.FindByEmailAsync(email) != null && await _userManager.FindByNameAsync(username) != null)
+                return true;
+
+            return false;
+        }
     }
 }

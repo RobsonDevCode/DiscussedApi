@@ -1,17 +1,16 @@
 ﻿using DiscussedApi.Configuration;
 using DiscussedApi.Reopisitory.Auth;
-using MySqlConnector;
+using Org.BouncyCastle.Security;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace DiscussedApi.Extentions
 {
     public class Encryptor : IEncryptor
     {
         private readonly IAuthDataAccess _authDataAccess;
-        public Encryptor(IAuthDataAccess authDataAccess) 
+        public Encryptor(IAuthDataAccess authDataAccess)
         {
-          _authDataAccess = authDataAccess;
+            _authDataAccess = authDataAccess;
         }
         private static NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
         public static bool TryDecrpytToken(string encryptedToken, out long? nextpageToken)
@@ -52,71 +51,68 @@ namespace DiscussedApi.Extentions
             }
 
         }
-
-        public async Task<string> DecryptPassword(string encyptedPassword, Guid id)
+        public async Task<string> DecryptString(string value, Guid id)
         {
-            if (string.IsNullOrWhiteSpace(encyptedPassword))
-                throw new ArgumentNullException("Invalid encryption parameters, password can't be null");
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentNullException(nameof(value), "Invalid encryption parameters, params can't be null");
 
-            var credentials = await _authDataAccess.GetKeyAndIv(id);
+            var credentials = await _authDataAccess.GetKeyAndIvAsync(id);
+
             if (credentials == null)
-                throw new Exception("Credentails for decrypting password are null");
+               throw new Exception("Trouble getting key and iv for decryption");
+            
+            if(credentials.ExpireTime > DateTime.UtcNow)
+            {
+                await _authDataAccess.DeleteKeyAndIvByIdAsync(id);
+                throw new Exception("Key and Iv have Expired");
+            }
 
-            string password = string.Empty;
+            if (!isBase64String(value) || !isBase64String(credentials.Key) || !isBase64String(credentials.Iv))
+                throw new ArgumentException("Invalid Base64 input in encryption parameters.");
 
-            byte[] encryptedBytes = Convert.FromBase64String(encyptedPassword);
+            byte[] encryptedBytes = Convert.FromBase64String(value);
             byte[] key = Convert.FromBase64String(credentials.Key);
             byte[] iv = Convert.FromBase64String(credentials.Iv);
+
             using (Aes aes = Aes.Create())
             {
-                ICryptoTransform decryptor = aes.CreateDecryptor(key, iv) ;
-                using (MemoryStream memoryStream = new(encryptedBytes))
+                aes.Key = key;
+                aes.IV = iv;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                ICryptoTransform decryptor = aes.CreateDecryptor(key, iv);
+
+                using (MemoryStream memoryStream = new MemoryStream(encryptedBytes))
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
+                using (StreamReader reader = new StreamReader(cryptoStream))
                 {
-                    using (CryptoStream cs = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader reader = new(cs))
-                        {
-                            return reader.ReadToEnd();
-                        }
-                    }
+                    return reader.ReadToEnd();
                 }
             }
         }
 
-        public static bool TryEncryptValue(long value, out string encryptedString)
+        public async Task<(string Email, string Password)> DecryptCredentials(string encryptedEmail, string encryptedPassword, Guid keyId)
         {
-            try
-            {
-                using (Aes aes = Aes.Create())
-                {
-                    aes.Key = Settings.Encryption.Key;
-                    aes.IV = Settings.Encryption.IV;
+            var decryptEmail = DecryptString(encryptedEmail, keyId);
+            var decryptPassword = DecryptString(encryptedPassword, keyId);
 
-                    using (MemoryStream ms = new())
-                    {
-                        using (ICryptoTransform encryptor = aes.CreateEncryptor())
-                        {
-                            using (CryptoStream cs = new(ms, encryptor, CryptoStreamMode.Write))
-                            {
-                                byte[] valueBytes = BitConverter.GetBytes(Convert.ToInt64(value));
-                                cs.Write(valueBytes, 0, valueBytes.Length);
+            Task[] decryptCredentials = new[] {
+                    decryptEmail,
+                    decryptPassword
+                };
 
-                                cs.FlushFinalBlock();
-                                encryptedString = Convert.ToBase64String(ms.ToArray());
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex.Message);
-                encryptedString = "";
-                return false;
-            }
+            Task.WaitAll(decryptCredentials);
+
+            return (await decryptEmail, await decryptPassword);
         }
 
+       
+        private static bool isBase64String(string s)
+        {
+            Span<byte> buffer = new Span<byte>(new byte[s.Length]);
+            return Convert.TryFromBase64String(s, buffer, out _);
+        }
 
     }
 }

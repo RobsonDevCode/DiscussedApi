@@ -13,7 +13,7 @@ namespace DiscussedApi.Reopisitory.Auth
             _mySQLConnectionFactory = mySqlConnectionFactory;
         }
 
-        public async Task<RefreshToken?> GetTokenById(string tokenSent)
+        public async Task<RefreshToken?> GetTokenByIdAsync(string tokenSent)
         {
             await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync();
@@ -38,7 +38,7 @@ namespace DiscussedApi.Reopisitory.Auth
             return null;
         }
 
-        public async Task StoreRefreshToken(RefreshToken token)
+        public async Task StoreRefreshTokenAsync(RefreshToken token)
         {
             await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync();
@@ -57,47 +57,66 @@ namespace DiscussedApi.Reopisitory.Auth
                 throw new Exception("Query excecuted but no change was made!");
         }
 
-        public async Task StoreKeyAndIv(EncyrptionCredentialsDto encyrptionCredentials)
+        public async Task StoreKeyAndIvAsync(EncyrptionCredentialsDto encyrptionCredentials)
         {
             await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync();
 
-            await using MySqlCommand cmd = new(@"INSERT INTO keyandiv(id, aes_key, iv) 
-                                                 VALUES(@id, @key, @iv)", connection);
+            await using MySqlCommand cmd = new(@"INSERT INTO keyandiv(id, aes_key, iv, expire_date) 
+                                                 VALUES(@id, @key, @iv, NOW())", connection);
 
             cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = encyrptionCredentials.Id;
             cmd.Parameters.Add("@key", MySqlDbType.VarChar).Value = encyrptionCredentials.Key;
             cmd.Parameters.Add("@iv", MySqlDbType.VarChar).Value = encyrptionCredentials.Iv;
 
             var result = await cmd.ExecuteNonQueryAsync();
-            if(result == 0)
+            if (result == 0)
                 throw new Exception("Query excecuted but no change was made!");
         }
-        public async Task<EncyrptionCredentialsDto?> GetKeyAndIv(Guid id)
+
+        public async Task<EncyrptionCredentialsDto?> GetKeyAndIvAsync(Guid id)
         {
             await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync();
 
-            await using MySqlCommand cmd = new(@"SELECT id, aes_key, iv 
+            await using MySqlCommand cmd = new(@"SELECT id, aes_key, iv, expire_date
                                                  FROM keyandiv 
-                                                 WHERE id = @id LIMIT 1",connection);
+                                                 WHERE id = @id LIMIT 1", connection);
 
             cmd.Parameters.Add("@id", MySqlDbType.VarChar).Value = id;
 
             var reader = await cmd.ExecuteReaderAsync();
-            while(await reader.ReadAsync())
+
+            while (await reader.ReadAsync())
             {
-                return new EncyrptionCredentialsDto() {
-                  Id = reader.GetGuid("id"),
-                  Key = reader.GetString("aes_key"),
-                  Iv = reader.GetString("iv")
+                return new EncyrptionCredentialsDto()
+                {
+                    Id = reader.GetGuid("id"),
+                    Key = reader.GetString("aes_key"),
+                    Iv = reader.GetString("iv"), 
+                    ExpireTime = reader.GetDateTime("expire_date")
                 };
             }
+
 
             return null;
         }
 
-        public async Task DeleteTokenById(string refreshToken)
+        public async Task DeleteKeyAndIvByIdAsync(Guid id)
+        {
+            await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync();
+
+            await using MySqlCommand cmd = new(@"DELETE FROM keyandiv WHERE id = @id", connection);
+            cmd.Parameters.Add("@id", MySqlDbType.Guid).Value = id;
+
+            var result = await cmd.ExecuteNonQueryAsync();
+
+            if (result == 0)
+                throw new Exception("Query excecuted but no change was made!");
+        }
+
+        public async Task DeleteTokenByIdAsync(string refreshToken)
         {
             await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync();
@@ -111,5 +130,36 @@ namespace DiscussedApi.Reopisitory.Auth
                 throw new Exception("Query Excecuted but no change was made");
         }
 
+        public async Task StoreEmailConfirmationCodeAsync(string email, int confirmationNum)
+        {
+            await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync();
+            await using MySqlCommand cmd = new(@"INSERT INTO confirmationemail (email, confirmation_code)
+                                                 VALUES(@email, @confirmation_code)");
+
+            cmd.Parameters.Add("@email", MySqlDbType.VarChar).Value = email;
+            cmd.Parameters.Add("@confirmation_code", MySqlDbType.Int32).Value = confirmationNum;
+
+            var result = await cmd.ExecuteNonQueryAsync();
+
+            if (result == 0)
+                throw new Exception("Query excecuted but no change was made!");
+        }
+
+        public async Task<bool> IsConfirmationCodeCorrect(int confirmationCode)
+        {
+            await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync();
+            await using MySqlCommand cmd = new(@"SELECT COUNT(*) FROM user_info.confirmationemail 
+                                                 WHERE confirmation_code = @code", connection);
+
+            cmd.Parameters.Add("@code", MySqlDbType.Int32).Value = confirmationCode;
+
+            ushort count = Convert.ToUInt16(await cmd.ExecuteScalarAsync() ?? 0);
+            if (count > 0)
+                return true;
+
+            return false;
+        }
     }
 }

@@ -7,6 +7,6 @@ namespace DiscussedApi.Processing.UserPocessing
     public interface IUserProcessing
     {
         Task<IdentityResult> ChangePassword(RecoverUserDto recoverUser, User? user);
-        Task<bool> UserAlreadyExists(string email);
+        Task<bool> UserAlreadyExists(string email, string username);
     }
 }

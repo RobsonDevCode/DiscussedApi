@@ -43,7 +43,7 @@ namespace DiscussedApi.Services.Tokens
 
             setRefreshTokenInCookie(response, refreshToken, user.UserName);
 
-            await _authDataAccess.StoreRefreshToken(refreshToken);
+            await _authDataAccess.StoreRefreshTokenAsync(refreshToken);
 
             return (jwt, refreshToken);
         }
@@ -82,7 +82,7 @@ namespace DiscussedApi.Services.Tokens
 
         public async Task<(string? Jwt, string? NewRefreshToken)> ProcessRefreshToken(string tokenSent, HttpResponse response)
         {
-            var token = await _authDataAccess.GetTokenById(tokenSent);
+            var token = await _authDataAccess.GetTokenByIdAsync(tokenSent);
 
             if (token == null || token.ExpiresOnUtc < DateTime.UtcNow)
                 return (null, null);
@@ -105,7 +105,7 @@ namespace DiscussedApi.Services.Tokens
         public async Task CleanUpTokens(string username, string refreshToken, HttpResponse response)
         {
             deleteTokensFromCookies(username, response);
-            await _authDataAccess.DeleteTokenById(refreshToken);
+            await _authDataAccess.DeleteTokenByIdAsync(refreshToken);
         }
 
         public void deleteTokensFromCookies(string username, HttpResponse response)

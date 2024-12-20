@@ -5,10 +5,13 @@ namespace DiscussedApi.Reopisitory.Auth
 {
     public interface IAuthDataAccess
     {
-        Task DeleteTokenById(string refreshToken);
-        Task<RefreshToken?> GetTokenById(string tokenSent);
-        Task StoreRefreshToken(RefreshToken token);
-        Task StoreKeyAndIv(EncyrptionCredentialsDto encyrptionCredentials);
-        Task<EncyrptionCredentialsDto?> GetKeyAndIv(Guid id);
+        Task DeleteTokenByIdAsync(string refreshToken);
+        Task<RefreshToken?> GetTokenByIdAsync(string tokenSent);
+        Task StoreRefreshTokenAsync(RefreshToken token);
+        Task StoreKeyAndIvAsync(EncyrptionCredentialsDto encyrptionCredentials);
+        Task StoreEmailConfirmationCodeAsync(string email, int confirmationCode);
+        Task<bool> IsConfirmationCodeCorrect(int confirmationCode);
+        Task<EncyrptionCredentialsDto?> GetKeyAndIvAsync(Guid id);
+        Task DeleteKeyAndIvByIdAsync(Guid id);
     }
 }

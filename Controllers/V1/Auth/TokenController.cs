@@ -59,7 +59,7 @@ namespace DiscussedApi.Controllers.V1.Auth
             if (failedValidation != null)
                 return ValidationProblem(failedValidation);
 
-            await _authDataAccess.StoreKeyAndIv(encyrptionCredentials);
+            await _authDataAccess.StoreKeyAndIvAsync(encyrptionCredentials);
 
             return Created();
         }
