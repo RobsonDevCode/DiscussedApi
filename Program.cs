@@ -30,6 +30,7 @@ using DiscussedApi.Abstraction;
 using DiscussedApi.Reopisitory.DataMapping;
 using DiscussedApi.Reopisitory.Auth;
 using DiscussedApi.Extentions;
+using DiscussedApi.Processing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -126,6 +127,7 @@ builder.Services.AddSwaggerGen(g =>
     });
 });
 
+
 //Dependcy Injections
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IUserProcessing, UserProcessing>();
@@ -140,6 +142,7 @@ builder.Services.AddTransient<IReplyProcessing, ReplyProcessing>();
 builder.Services.AddTransient<IReplyDataAccess, ReplyDataAccess>();
 builder.Services.AddTransient<IRepositoryMapper, RepositoryMappers>();
 builder.Services.AddTransient<IEncryptor, Encryptor>();
+builder.Services.AddTransient<IEmailProcessing, EmailProcessing>();
 builder.Services.AddScoped<IMySqlConnectionFactory, MySqlConnectionFactory>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthDataAccess, AuthDataAccess>();

@@ -2,8 +2,7 @@
 {
     public interface IEncryptor
     {
-        Task<string> DecryptString(string encyptedPassword, Guid id);
-
-        Task<(string Email, string Password)> DecryptCredentials(string encryptedEmail, string encryptedPassword, Guid keyId);
+        Task<string> DecryptStringAsync(string encyptedPassword, Guid id);
+        Task<(string UsernameOrEmail, string Password)> DecryptCredentials(string encryptedEmail, string encryptedPassword, Guid keyId);
     }
 }

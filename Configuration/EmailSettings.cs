@@ -8,11 +8,13 @@
             this._config = config;
         }
 
-        public string Mailer => _config.GetValue<string>($"EmailSenderSetting:{nameof(Mailer)}") ??
-           throw new NullReferenceException($"Value for {nameof(Mailer)} hasnt been configured correctly");
+        public string Key => _config.GetValue<string>($"EmailSenderSetting:{nameof(Key)}") ??
+           throw new NullReferenceException($"Value for {nameof(Key)} hasnt been configured correctly");
 
-        public string Password => _config.GetValue<string>($"EmailSenderSetting:{nameof(Password)}") ??
-            throw new NullReferenceException($"Value for {nameof(Password)} hasnt been configured correctly");
+        public string Secret => _config.GetValue<string>($"EmailSenderSetting:{nameof(Secret)}") ??
+            throw new NullReferenceException($"Value for {nameof(Secret)} hasnt been configured correctly");
+        public string Sender => _config.GetValue<string>($"EmailSenderSetting:{nameof(Sender)}") ??
+            throw new NullReferenceException($"Value for {nameof(Secret)} hasnt been configured correctly");
 
         public string RecoveryHtmlBodyFilePath => _config.GetValue<string>($"EmailSenderSetting:{nameof(RecoveryHtmlBodyFilePath)}") ??
          throw new NullReferenceException($"Value for {nameof(RecoveryHtmlBodyFilePath)} hasnt been configured correctly");

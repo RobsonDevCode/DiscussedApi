@@ -51,7 +51,7 @@ namespace DiscussedApi.Extentions
             }
 
         }
-        public async Task<string> DecryptString(string value, Guid id)
+        public async Task<string> DecryptStringAsync(string value, Guid id)
         {
             if (string.IsNullOrWhiteSpace(value))
                 throw new ArgumentNullException(nameof(value), "Invalid encryption parameters, params can't be null");
@@ -92,10 +92,10 @@ namespace DiscussedApi.Extentions
             }
         }
 
-        public async Task<(string Email, string Password)> DecryptCredentials(string encryptedEmail, string encryptedPassword, Guid keyId)
+        public async Task<(string UsernameOrEmail, string Password)> DecryptCredentials(string encryptedEmailOrUsername, string encryptedPassword, Guid keyId)
         {
-            var decryptEmail = DecryptString(encryptedEmail, keyId);
-            var decryptPassword = DecryptString(encryptedPassword, keyId);
+            var decryptEmail = DecryptStringAsync(encryptedEmailOrUsername, keyId);
+            var decryptPassword = DecryptStringAsync(encryptedPassword, keyId);
 
             Task[] decryptCredentials = new[] {
                     decryptEmail,

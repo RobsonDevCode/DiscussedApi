@@ -18,8 +18,8 @@ namespace DiscussedApi.Configuration
         public static JwtSettings JwtSettings => new JwtSettings(_config);
         public static EmailSettings EmailSettings => new EmailSettings(_config);
         public static IdentitySettings  IdentitySettings => new IdentitySettings(_config);
-
         public static Encryption Encryption => new Encryption(_config);
+
         //workers for updating following and follower for when a follow request is made
         public static int FollowerTasks = 2;
 

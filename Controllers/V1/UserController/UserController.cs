@@ -2,13 +2,14 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using DiscussedApi.Common.Validations;
+
 using Newtonsoft.Json;
 using DiscussedApi.Configuration;
 using DiscussedApi.Processing.UserPocessing;
 using DiscussedApi.Services.Email;
 using DiscussedApi.Services.Tokens;
 using DiscussedDto.User;
-using System.ComponentModel.DataAnnotations;
 using NLog;
 using DiscussedApi.Models.UserInfo;
 using DiscussedApi.Models.Auth;
@@ -19,6 +20,9 @@ using DiscussedApi.Reopisitory.Auth;
 using Discusseddto.Email;
 using DiscussedApi.Models.ApiResponses.Email;
 using DiscussedApi.Models.ApiResponses.Error;
+using static DiscussedApi.Models.EmailTypeToGenertate;
+using DiscussedApi.Processing;
+using FluentValidation;
 
 namespace DiscussedApi.Controllers.V1.UserController
 {
@@ -29,21 +33,22 @@ namespace DiscussedApi.Controllers.V1.UserController
         private readonly UserManager<User> _userManager;
         private readonly ITokenService _tokenService;
         private readonly SignInManager<User> _signInManager;
-        private readonly IEmailSender _emailSender;
         private readonly IUserProcessing _userProcessing;
         private readonly IAuthDataAccess _authDataAccess;
         private readonly IEncryptor _encryptor;
+        private readonly IEmailProcessing _emailProcessing;
         private NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         public UserController(UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager,
-            IEmailSender emailSender, IUserProcessing userProcessing, IAuthDataAccess authDataAccess, IEncryptor encryptor)
+            IUserProcessing userProcessing, IAuthDataAccess authDataAccess,
+            IEncryptor encryptor, IEmailProcessing emailProcessing)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
-            _emailSender = emailSender;
             _userProcessing = userProcessing;
             _authDataAccess = authDataAccess;
             _encryptor = encryptor;
+            _emailProcessing = emailProcessing;
         }
 
 #if DEBUG
@@ -71,14 +76,14 @@ namespace DiscussedApi.Controllers.V1.UserController
                 return BadRequest("Request body is empty");
 
             if (string.IsNullOrEmpty(register.Password))
-                return BadRequest(new { error = new ErrorResponse("Password is cant be empty")});
+                return BadRequest(new { error = new ErrorResponse("Password is cant be empty") });
 
             if (string.IsNullOrEmpty(register.UserName) || string.IsNullOrEmpty(register.EmailAddress))
                 return BadRequest(new { error = new ErrorResponse("Invalid Username or Email") });
 
             var credentials = await _encryptor.DecryptCredentials(register.EmailAddress, register.Password, register.KeyId);
 
-            if (await _userProcessing.UserAlreadyExists(credentials.Email, register.UserName))
+            if (await _userProcessing.UserAlreadyExists(credentials.UsernameOrEmail, register.UserName))
                 return BadRequest(new { error = new ErrorResponse("Account connected to this email already exists") });
 
             if (string.IsNullOrEmpty(credentials.Password))
@@ -87,7 +92,7 @@ namespace DiscussedApi.Controllers.V1.UserController
             var user = new User
             {
                 UserName = register.UserName,
-                Email = credentials.Email,
+                Email = credentials.UsernameOrEmail,
             };
 
             var createdUser = await _userManager.CreateAsync(user, credentials.Password);
@@ -112,6 +117,9 @@ namespace DiscussedApi.Controllers.V1.UserController
                 });
             }
 
+            //fire and forget email
+            _emailProcessing.SendConfirmationEmail(credentials.UsernameOrEmail);
+
             return Ok();
         }
 
@@ -120,24 +128,23 @@ namespace DiscussedApi.Controllers.V1.UserController
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto)
+        public async Task<IActionResult> Login(LoginDto loginDto, [FromServices] IValidator<LoginDto> validator)
         {
-            if (loginDto == null)
-                return BadRequest("Login Credentials are null");
+            var failedValidation = await Validator<LoginDto>.TryValidateRequest(loginDto, validator);
+
+            if (failedValidation != null)
+                return ValidationProblem(failedValidation);
+
+            var credentials = await _encryptor.DecryptCredentials(loginDto.UsernameOrEmail, loginDto.Password, loginDto.KeyId);
 
             User? user = new User();
-            if (loginDto.UserNameOrEmail.Contains('@'))
-            {
-                user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == loginDto.UserNameOrEmail.ToLower());
-            }
+            if (credentials.UsernameOrEmail.Contains('@'))
+                user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == credentials.UsernameOrEmail.ToLower());
             else
-            {
-                user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == loginDto.UserNameOrEmail);
-            }
+                user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == credentials.UsernameOrEmail);
 
             if (user == null)
-                return Unauthorized($"{loginDto.UserNameOrEmail} Is Not A Valid Username!");
-
+                return Unauthorized($"{credentials.UsernameOrEmail} Is Not A Valid Username!");
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
@@ -172,37 +179,39 @@ namespace DiscussedApi.Controllers.V1.UserController
             return Ok(user);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("recover/account")]
         public async Task<IActionResult> RecoverAccount([FromBody] RecoverUserDto recoverUser)
         {
-            if (string.IsNullOrWhiteSpace(recoverUser.NewPassword) || string.IsNullOrWhiteSpace(recoverUser.Email))
-                return BadRequest("Attempted to recover account failed Email or Password is incorrect");
+            if (string.IsNullOrWhiteSpace(recoverUser.Email))
+                return BadRequest("Attempted to recover account failed Email is incorrect");
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == recoverUser.Email.ToLower());
+            var unecryptedEmail = await _encryptor.DecryptStringAsync(recoverUser.Email, recoverUser.KeyId);
+
+            var user = await _userManager.Users.FirstOrDefaultAsync(x => string.Equals(x.Email.ToLower() ,unecryptedEmail.ToLower()));
 
             if (user == null)
-            {
-                return BadRequest($"No account with email {recoverUser.Email} exists please create account Or check your email is correct!");
-            }
+                return Unauthorized($"No account with email {recoverUser.Email} exists please create account Or check your email is correct!");
 
-            var result = await _userProcessing.ChangePassword(recoverUser, user);
+            _emailProcessing.SendRecoveryEmail(unecryptedEmail);
 
-            if (!result.Succeeded) return StatusCode(500, result.Errors);
-
-            return Ok(new
-            {
-                success = "password changed"
-            });
+            return Ok();
         }
+
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpPost("mail/confirmation")]
-        public async Task<IActionResult> EmailConfirmation([FromBody] ConfirmationEmailDto confirmationEmailDto)
+        [HttpPost("email/confirmation")]
+        public async Task<IActionResult> EmailConfirmation([FromBody] ConfirmationCodeDto confirmationEmailDto)
         {
-            var user = await _userManager.FindByEmailAsync(confirmationEmailDto.Email);
+            var unecryptedEmail = await _encryptor.DecryptStringAsync(confirmationEmailDto.Email, confirmationEmailDto.Key);
+
+            var user = await _userManager.FindByEmailAsync(unecryptedEmail);
             if (user == null)
                 return Unauthorized();
 
@@ -210,7 +219,7 @@ namespace DiscussedApi.Controllers.V1.UserController
                 return Ok(new EmailConfirmationApiResponse
                 {
                     Success = false,
-                    Message = "Incorrect Confirmation Code given"
+                    Message = "Incorrect Confirmation Code Given."
                 });
 
             user.EmailConfirmed = true;
@@ -224,7 +233,7 @@ namespace DiscussedApi.Controllers.V1.UserController
 
             return Ok(new EmailConfirmationApiResponse
             {
-                Success = true, 
+                Success = true,
                 Message = "User Email Confirmed"
             });
         }

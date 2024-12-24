@@ -76,30 +76,37 @@ namespace DiscussedApi.Reopisitory.Auth
 
         public async Task<EncyrptionCredentialsDto?> GetKeyAndIvAsync(Guid id)
         {
-            await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
-            await connection.OpenAsync();
+            try
+            {
+                await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
+                await connection.OpenAsync();
 
-            await using MySqlCommand cmd = new(@"SELECT id, aes_key, iv, expire_date
+                await using MySqlCommand cmd = new(@"SELECT id, aes_key, iv, expire_date
                                                  FROM keyandiv 
                                                  WHERE id = @id LIMIT 1", connection);
 
-            cmd.Parameters.Add("@id", MySqlDbType.VarChar).Value = id;
+                cmd.Parameters.Add("@id", MySqlDbType.VarChar).Value = id;
 
-            var reader = await cmd.ExecuteReaderAsync();
+                var reader = await cmd.ExecuteReaderAsync();
 
-            while (await reader.ReadAsync())
-            {
-                return new EncyrptionCredentialsDto()
+                while (await reader.ReadAsync())
                 {
-                    Id = reader.GetGuid("id"),
-                    Key = reader.GetString("aes_key"),
-                    Iv = reader.GetString("iv"), 
-                    ExpireTime = reader.GetDateTime("expire_date")
-                };
+                    return new EncyrptionCredentialsDto()
+                    {
+                        Id = reader.GetGuid("id"),
+                        Key = reader.GetString("aes_key"),
+                        Iv = reader.GetString("iv"),
+                        ExpireTime = reader.GetDateTime("expire_date")
+                    };
+                }
+
+
+                return null;
             }
-
-
-            return null;
+            catch(Exception ex)
+            {
+                throw;
+            }
         }
 
         public async Task DeleteKeyAndIvByIdAsync(Guid id)
@@ -135,7 +142,7 @@ namespace DiscussedApi.Reopisitory.Auth
             await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync();
             await using MySqlCommand cmd = new(@"INSERT INTO confirmationemail (email, confirmation_code)
-                                                 VALUES(@email, @confirmation_code)");
+                                                 VALUES(@email, @confirmation_code)", connection);
 
             cmd.Parameters.Add("@email", MySqlDbType.VarChar).Value = email;
             cmd.Parameters.Add("@confirmation_code", MySqlDbType.Int32).Value = confirmationNum;
