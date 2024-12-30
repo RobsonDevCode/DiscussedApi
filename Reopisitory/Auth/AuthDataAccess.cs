@@ -1,4 +1,5 @@
 ﻿using DiscussedApi.Abstraction;
+using DiscussedApi.Configuration;
 using DiscussedApi.Models.Auth;
 using Discusseddto.Auth;
 using MySqlConnector;
@@ -13,7 +14,7 @@ namespace DiscussedApi.Reopisitory.Auth
             _mySQLConnectionFactory = mySqlConnectionFactory;
         }
 
-        public async Task<RefreshToken?> GetTokenByIdAsync(string tokenSent)
+        public async Task<RefreshToken?> GetRefreshTokenByIdAsync(string tokenSent)
         {
             await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
             await connection.OpenAsync();
@@ -36,6 +37,64 @@ namespace DiscussedApi.Reopisitory.Auth
             }
 
             return null;
+        }
+
+        public async Task<ResetPasswordToken?> GetPasswordTokenAsync(string tokenSent)
+        {
+            await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync();
+            await using MySqlCommand cmd = new MySqlCommand(@"SELECT email,
+                                                              token, 
+                                                              expiresOnUtc FROM passwordchangetokens 
+                                                              WHERE token = @token LIMIT 1", connection);
+
+            cmd.Parameters.Add("@token", MySqlDbType.VarChar).Value = tokenSent;
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new ResetPasswordToken()
+                {
+                    Email = reader.GetString("email"),
+                    Token = reader.GetString("token"),
+                    ExpiresOnUtc = reader.GetDateTime("expiresOnUtc")
+                };
+            }
+
+            return null;
+        }
+        public async Task<(bool IsValid, string? ValidUserEmail)> ValidPasswordRefreshToken(string token)
+        {
+            if(string.IsNullOrWhiteSpace(token))
+                throw new ArgumentNullException("failed validating password token, token is null");
+
+            await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync();
+            await using MySqlCommand cmd = new MySqlCommand(@"SELECT email, 
+                                                                     token, 
+                                                                     expiresOnUtc 
+                                                              FROM passwordchangetokens WHERE token = @token
+                                                              ORDER BY expiresOnUtc DESC LIMIT 1", connection); 
+
+            cmd.Parameters.Add("@token", MySqlDbType.VarChar).Value = token;
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                ResetPasswordToken resetPasswordToken = new ResetPasswordToken()
+                {
+                    Email = reader.GetString("email"),
+                    Token = reader.GetString("token"),
+                    ExpiresOnUtc = reader.GetDateTime("expiresOnUtc")
+                };
+
+                if(resetPasswordToken.ExpiresOnUtc <= DateTime.UtcNow)
+                    return (false, null);
+
+                return (true, resetPasswordToken.Email);
+            }
+
+            return (false, null);
         }
 
         public async Task StoreRefreshTokenAsync(RefreshToken token)
@@ -103,11 +162,12 @@ namespace DiscussedApi.Reopisitory.Auth
 
                 return null;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw;
             }
         }
+
 
         public async Task DeleteKeyAndIvByIdAsync(Guid id)
         {
@@ -137,6 +197,23 @@ namespace DiscussedApi.Reopisitory.Auth
                 throw new Exception("Query Excecuted but no change was made");
         }
 
+        public async Task StorePassordResetToken(string? email, string token)
+        {
+            await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
+            await connection.OpenAsync();
+            await using MySqlCommand cmd = new(@"INSERT INTO passwordchangetokens (email, token, expiresOnUtc)
+                                                 VALUES (@email, @token, @expiresAt)", connection);
+
+            cmd.Parameters.Add("@email", MySqlDbType.VarChar).Value = email;
+            cmd.Parameters.Add("@token", MySqlDbType.VarChar).Value = token;
+            cmd.Parameters.Add("@expiresAt", MySqlDbType.DateTime).Value = DateTime.UtcNow.AddMinutes(Settings.Encryption.PasswordResetExpireTime);
+
+            var result = await cmd.ExecuteNonQueryAsync();
+
+            if (result == 0)
+                throw new Exception("Query Excecuted but no change was made");
+
+        }
         public async Task StoreEmailConfirmationCodeAsync(string email, int confirmationNum)
         {
             await using MySqlConnection connection = _mySQLConnectionFactory.CreateUserInfoConnection();
@@ -168,5 +245,7 @@ namespace DiscussedApi.Reopisitory.Auth
 
             return false;
         }
+
+
     }
 }

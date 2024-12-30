@@ -43,15 +43,18 @@ namespace DiscussedApi.Processing
 
         }
 
-        public async Task SendRecoveryEmail(string email)
+        public async Task SendRecoveryEmail(string email, string token)
         {
             if (string.IsNullOrEmpty(email))
                 throw new EmailBuildingException("email is null when sending recovery email");
 
             string body = await _emailSender.GenerateTemplateHtmlBodyAsync(EmailType.Recovery);
-
             if (string.IsNullOrWhiteSpace(body))
                 throw new EmailBuildingException(EmailType.Recovery);
+
+            body = body.Replace("{recoveryToken}", token);
+            await _emailSender.SendAsync(email, Settings.EmailSettings.RecoverySubject, body);
+
         }
     }
 }

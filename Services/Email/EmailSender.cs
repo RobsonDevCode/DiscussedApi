@@ -19,6 +19,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Html;
 using DiscussedApi.Reopisitory.Auth;
 using FluentEmail.Core;
+using System.Net.Mail;
 
 namespace DiscussedApi.Services.Email
 {
@@ -44,6 +45,9 @@ namespace DiscussedApi.Services.Email
 
         public async Task SendAsync(string toEmail, string subject, string? htmlBody, string? textContent = null)
         {
+            if (!isValidEmail(toEmail))
+                throw new Exception("Error sending email, email given in the wrong format");
+
             var payload = new Dictionary<string, object>
             {
             { "FromEmail", _sender },
@@ -67,11 +71,7 @@ namespace DiscussedApi.Services.Email
 
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Failed to send email. Status code: {response.StatusCode}, Response: {responseContent}");
-
-
         }
-
-
 
         public async Task<string> GenerateTemplateHtmlBodyAsync(EmailType emailType)
         {
@@ -87,7 +87,19 @@ namespace DiscussedApi.Services.Email
                 default:
                     throw new NotImplementedException("Email Type given is invalid or isn't implimented on the version being used");
             }
+        }
 
+        private bool isValidEmail(string email)
+        {
+            try
+            {
+                var mailAddress = new MailAddress(email);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

@@ -1,7 +1,10 @@
 ﻿using DiscussedApi.Common.Validations;
+using DiscussedApi.Extentions;
+using DiscussedApi.Models.ApiResponses;
 using DiscussedApi.Reopisitory.Auth;
 using DiscussedApi.Services.Tokens;
 using Discusseddto.Auth;
+using Discusseddto.User;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +17,12 @@ namespace DiscussedApi.Controllers.V1.Auth
     {
         private readonly ITokenService _tokenService;
         private readonly IAuthDataAccess _authDataAccess;
-        public TokenController(ITokenService tokenService, IAuthDataAccess authDataAccess)
+        private readonly IEncryptor _encryptor;
+        public TokenController(ITokenService tokenService, IAuthDataAccess authDataAccess, IEncryptor encryptor)
         {
             _tokenService = tokenService;
             _authDataAccess = authDataAccess;
+            _encryptor = encryptor;
         }
 
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -62,6 +67,30 @@ namespace DiscussedApi.Controllers.V1.Auth
             await _authDataAccess.StoreKeyAndIvAsync(encyrptionCredentials);
 
             return Created();
+        }
+
+        /// <summary>
+        /// PasswordTokenValidation: Validates if the user can access the reset password page
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPost("password-validation")]
+        public async Task<IActionResult> PasswordTokenValidation([FromBody] string token)
+        {
+            string unecryptedToken = _tokenService.DecodeUrlSafeToken(token);
+
+            var user = await _authDataAccess.ValidPasswordRefreshToken(unecryptedToken);
+
+            if (!user.IsValid)
+                throw new BadHttpRequestException("no token provided");
+            
+            return Ok(new ApiResponse<object> { 
+                Success = true,
+                Data = new { email = user.ValidUserEmail}
+            });
         }
 
     }

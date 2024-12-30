@@ -23,31 +23,16 @@ namespace DiscussedApi.Middleware
             {
                 await _next(context);
             }
-            catch (ArgumentNullException ex)
+           
+            catch (BadHttpRequestException ex)
             {
                 _logger.Error(ex, ex.Message);
-                var problemDetails = new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad Request",
-                    Detail = ex.Message
-                };
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-
-                await context.Response.WriteAsJsonAsync(problemDetails);
+                await BadRequest400(context, ex);
             }
-            catch(KeyNotFoundException ex)
+            catch (KeyNotFoundException ex)
             {
                 _logger.Error(ex, ex.Message);
-                var problemDetails = new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad Request",
-                    Detail = ex.Message,
-                };
-
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync(problemDetails);
+                await BadRequest400(context, ex);
             }
             catch(ServiceNotAuthenticatedException ex)
             {
@@ -62,12 +47,24 @@ namespace DiscussedApi.Middleware
                 context.Response.StatusCode= StatusCodes.Status401Unauthorized;
                 await context.Response.WriteAsJsonAsync(problemDetails);
             }
-            catch (CryptographicException ex)
+            catch(InvalidOperationException ex)
             {
+                _logger.Error(ex, ex.Message);
                 await Status500(context, ex);
             }
-            catch(BuildTokenException ex)
+            catch (CryptographicException ex)
             {
+                _logger.Error(ex, ex.Message);
+                await Status500(context, ex);
+            }
+            catch (ArgumentNullException ex)
+            {
+                _logger.Error(ex, ex.Message);
+                await Status500WithNoDetails(context, ex);
+            }
+            catch (BuildTokenException ex)
+            {
+                _logger.Error(ex, ex.Message);
                 await Status500WithNoDetails(context, ex);
             }
             catch (Exception ex)
@@ -83,7 +80,6 @@ namespace DiscussedApi.Middleware
         }
         private async Task Status500(HttpContext context, Exception ex)
         {
-            _logger.Error(ex, ex.Message);
 
             var problemDetails = new ProblemDetails()
             {
@@ -94,6 +90,30 @@ namespace DiscussedApi.Middleware
 
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
+            await context.Response.WriteAsJsonAsync(problemDetails);
+        }
+        private async Task BadRequest400(HttpContext context, Exception ex)
+        {
+            var problemDetails = new ProblemDetails()
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = ex.Message,
+            };
+
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(problemDetails);
+        }
+        private async Task Unauthorized(HttpContext context, Exception ex)
+        {
+            var problemDetails = new ProblemDetails()
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Unauthorized",
+                Detail = ex.Message
+            };
+
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsJsonAsync(problemDetails);
         }
 

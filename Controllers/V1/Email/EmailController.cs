@@ -13,6 +13,8 @@ using DiscussedApi.Extentions;
 using DiscussedApi.Configuration;
 using FluentEmail.Core;
 using DiscussedApi.Processing;
+using DiscussedApi.Services.Tokens;
+using DiscussedApi.Models.ApiResponses;
 
 namespace DiscussedApi.Controllers.V1.Email
 {
@@ -24,29 +26,49 @@ namespace DiscussedApi.Controllers.V1.Email
         private readonly IAuthDataAccess _authDataAccess;
         private readonly UserManager<User> _userManager;
         private readonly IEncryptor _encryptor;
+        private readonly ITokenService _tokenService;
         private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
-        public EmailController(IAuthDataAccess authDataAccess, 
-            UserManager<User> userManager, IEncryptor encryptor, IEmailProcessing emailProcessing)
+        public EmailController(IAuthDataAccess authDataAccess,UserManager<User> userManager, 
+            IEncryptor encryptor, IEmailProcessing emailProcessing, ITokenService tokenService)
         {
             _authDataAccess = authDataAccess;
             _userManager = userManager;
             _encryptor = encryptor;
             _emailProcessing = emailProcessing;
+            _tokenService = tokenService;
         }
 
-        //[HttpPost("send/recovery")]
-        //public async Task<IActionResult> SendRecoveryEmail([FromBody] EmailDto emailRecovery)
-        //{
-        //    if (string.IsNullOrWhiteSpace(emailRecovery.ToSend)) return BadRequest("Email sent is null");
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        //    string body = await _emailSender.GenerateTemplateHtmlBodyAsync(EmailType.Recovery);
+        [HttpPost("send/recovery")]
+        public async Task<IActionResult> SendRecoveryEmail([FromBody] EmailDto emailRecovery)
+        {
+            string email = await _encryptor.DecryptStringAsync(emailRecovery.ToSend, emailRecovery.KeyId);
 
-        //    if (string.IsNullOrWhiteSpace(body)) return StatusCode(500, "Unable to send recovery email");
+            var user = await _userManager.FindByEmailAsync(email.ToLower());
 
-        //    await _emailSender.SendAsync(emailRecovery.ToSend, Settings.EmailSettings.RecoverySubject, body);
+            if (user == null)
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Data = new { email_sent = false }
+                });
 
-        //    return Ok();
-        //}
+           string? token = await _tokenService.GenerateAndStorePasswordResetTokenAsync(user, Response);
+
+            if (string.IsNullOrWhiteSpace(token))
+                throw new InvalidOperationException("error when generating password reset token, token is null");
+            //fire and forget email
+             _emailProcessing.SendRecoveryEmail(email, token);
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Data = new { email_sent = true }
+            });
+        }
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -58,14 +80,13 @@ namespace DiscussedApi.Controllers.V1.Email
             if (string.IsNullOrWhiteSpace(confirmation.ToSend))
                 return BadRequest("Email sent is null");
 
+
             string email = await _encryptor.DecryptStringAsync(confirmation.ToSend, confirmation.KeyId);
 
             await _emailProcessing.SendConfirmationEmail(email);
 
             return Ok();
         }
-
-
 
         //TODO add a topic notification probably better todo in a seperate app 
     }

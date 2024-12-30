@@ -13,6 +13,8 @@ namespace DiscussedApi.Extentions
             _authDataAccess = authDataAccess;
         }
         private static NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+        
+        
         public static bool TryDecrpytToken(string encryptedToken, out long? nextpageToken)
         {
             try

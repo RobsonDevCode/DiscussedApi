@@ -23,6 +23,7 @@ using DiscussedApi.Models.ApiResponses.Error;
 using static DiscussedApi.Models.EmailTypeToGenertate;
 using DiscussedApi.Processing;
 using FluentValidation;
+using DiscussedApi.Models.ApiResponses;
 
 namespace DiscussedApi.Controllers.V1.UserController
 {
@@ -72,22 +73,16 @@ namespace DiscussedApi.Controllers.V1.UserController
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto register)
         {
-            if (register == null)
-                return BadRequest("Request body is empty");
-
             if (string.IsNullOrEmpty(register.Password))
-                return BadRequest(new { error = new ErrorResponse("Password is cant be empty") });
+                throw new ValidationException("Password is cant be empty");
 
             if (string.IsNullOrEmpty(register.UserName) || string.IsNullOrEmpty(register.EmailAddress))
-                return BadRequest(new { error = new ErrorResponse("Invalid Username or Email") });
+                throw new ValidationException("Invalid Username or Email");
 
             var credentials = await _encryptor.DecryptCredentials(register.EmailAddress, register.Password, register.KeyId);
 
             if (await _userProcessing.UserAlreadyExists(credentials.UsernameOrEmail, register.UserName))
-                return BadRequest(new { error = new ErrorResponse("Account connected to this email already exists") });
-
-            if (string.IsNullOrEmpty(credentials.Password))
-                return StatusCode(500);
+                throw new ValidationException("Account connected to this email already exists");
 
             var user = new User
             {
@@ -99,22 +94,22 @@ namespace DiscussedApi.Controllers.V1.UserController
 
             if (!createdUser.Succeeded)
             {
-                _logger.Error(createdUser.Errors);
-                return BadRequest(new
-                {
-                    errors = createdUser.Errors
-                });
+                var errorDescription = createdUser.Errors
+                                        ?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Description))
+                                        ?.Description ?? "Unexpected error while creating user. Please try again or contact support.";
+
+                throw new InvalidOperationException(errorDescription);
             }
 
             var roleResult = await _userManager.AddToRoleAsync(user, "User");
 
             if (!roleResult.Succeeded)
             {
-                _logger.Error(roleResult.Errors);
-                return StatusCode(500, new
-                {
-                    errors = roleResult.Errors
-                });
+                var errorDescription = roleResult.Errors
+                                         ?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Description))
+                                         ?.Description ?? "Unexpected error while creating user. Please try again or contact support.";
+
+                throw new InvalidOperationException(errorDescription);
             }
 
             //fire and forget email
@@ -133,7 +128,7 @@ namespace DiscussedApi.Controllers.V1.UserController
             var failedValidation = await Validator<LoginDto>.TryValidateRequest(loginDto, validator);
 
             if (failedValidation != null)
-                return ValidationProblem(failedValidation);
+                throw new ValidationException(failedValidation?.FirstOrDefault().Value?.AttemptedValue); //get first validation error
 
             var credentials = await _encryptor.DecryptCredentials(loginDto.UsernameOrEmail, loginDto.Password, loginDto.KeyId);
 
@@ -144,23 +139,14 @@ namespace DiscussedApi.Controllers.V1.UserController
                 user = await _userManager.Users.FirstOrDefaultAsync(x => x.UserName == credentials.UsernameOrEmail);
 
             if (user == null)
-                return Unauthorized($"{credentials.UsernameOrEmail} Is Not A Valid Username!");
+                throw new ValidationException($"{credentials.UsernameOrEmail} Is Not A Valid Username!");
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
 
             if (!result.Succeeded)
-                return Unauthorized("Username/Password is incorrect or not found");
+                throw new ValidationException("Username/Password is incorrect or not found");
 
-            var tokens = await _tokenService.GenerateAndSetJwtAndRefreshToken(user, Response);
-
-            if (string.IsNullOrWhiteSpace(tokens.Jwt))
-                throw new BuildTokenException($"Error when building JWT when presented user {user.UserName}");
-
-            if (tokens.RefreshToken == null)
-                throw new BuildTokenException($"Error when building Refresh Token when presented user {user.UserName}");
-
-            if (string.IsNullOrWhiteSpace(tokens.RefreshToken.Token))
-                throw new BuildTokenException($"Error when building Refresh Token when presented user {user.UserName}");
+            await _tokenService.GenerateAndSetJwtAndRefreshToken(user, Response);
 
             return Ok(new
             {
@@ -183,22 +169,60 @@ namespace DiscussedApi.Controllers.V1.UserController
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [HttpPost("recover/account")]
-        public async Task<IActionResult> RecoverAccount([FromBody] RecoverUserDto recoverUser)
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] RecoverUserDto recoverUser)
         {
-            if (string.IsNullOrWhiteSpace(recoverUser.Email))
-                return BadRequest("Attempted to recover account failed Email is incorrect");
 
-            var unecryptedEmail = await _encryptor.DecryptStringAsync(recoverUser.Email, recoverUser.KeyId);
+            var credentials = await _encryptor.DecryptCredentials(recoverUser.Email, recoverUser.NewPassword, recoverUser.KeyId);
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(x => string.Equals(x.Email.ToLower() ,unecryptedEmail.ToLower()));
+            var user = await _userManager.FindByEmailAsync(recoverUser.Email.ToLower());
 
+            //return ok as we dont want to give away an infomation regarding the email 
             if (user == null)
-                return Unauthorized($"No account with email {recoverUser.Email} exists please create account Or check your email is correct!");
+            {
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Data = new { password_changed = false }
+                });
+            }
 
-            _emailProcessing.SendRecoveryEmail(unecryptedEmail);
+            if (await _userManager.CheckPasswordAsync(user, credentials.Password))
+                throw new BadHttpRequestException("Password has already been used in the last 3 months please use a different password");
 
-            return Ok();
+            string? passwordToken = Request.Cookies[$"reset_password_token_{user.UserName}"];
+
+            if (string.IsNullOrWhiteSpace(passwordToken))
+            {
+                _logger.Error($"Invalid password token: {passwordToken}");
+                throw new InvalidOperationException("Invalid or expired reset token");
+            }
+
+            if (!await _tokenService.IsValidPasswordResetToken(passwordToken))
+            {
+                _logger.Error($"Invalid password token: {passwordToken}");
+                return Ok(new ApiResponse<object>
+                {
+                    Success = false,
+                    Data = new { password_changed = false }
+                });
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, passwordToken, recoverUser.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errorDescription = result.Errors
+                                        ?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Description))
+                                        ?.Description ?? "Unexpected error while resetting password. Please try again or contact support.";
+                throw new InvalidOperationException(errorDescription);
+            }
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Data = new { passwordChanged = true }
+            });
         }
 
 
@@ -213,13 +237,13 @@ namespace DiscussedApi.Controllers.V1.UserController
 
             var user = await _userManager.FindByEmailAsync(unecryptedEmail);
             if (user == null)
-                return Unauthorized();
+                throw new Exception("No user linked to this code");
 
             if (!await _authDataAccess.IsConfirmationCodeCorrect(confirmationEmailDto.ConfirmationCode))
-                return Ok(new EmailConfirmationApiResponse
+                return Ok(new ApiResponse<object>
                 {
                     Success = false,
-                    Message = "Incorrect Confirmation Code Given."
+                    Data = new { message = "Incorrect code given!"}
                 });
 
             user.EmailConfirmed = true;
@@ -228,13 +252,15 @@ namespace DiscussedApi.Controllers.V1.UserController
             if (!result.Succeeded)
             {
                 _logger.Error(result.Errors);
-                return StatusCode(500, result.Errors);
+                var errorDescription = result.Errors
+                                          ?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Description))
+                                          ?.Description ?? "Unexpected error while resetting password. Please try again or contact support.";
+                throw new InvalidOperationException(errorDescription);
             }
 
-            return Ok(new EmailConfirmationApiResponse
+            return Ok(new ApiResponse<object>
             {
-                Success = true,
-                Message = "User Email Confirmed"
+                Success = true
             });
         }
 

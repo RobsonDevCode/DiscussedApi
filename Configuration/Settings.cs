@@ -28,6 +28,7 @@ namespace DiscussedApi.Configuration
 
         public static int CommentMax = 100;
 
+        
         public static DateOnly DateToGetTopic = DateOnly.FromDateTime(DateTime.UtcNow);
 
         public static DateTime TimeToGetCommentFrom = DateTime.UtcNow.Date.AddDays(-1);

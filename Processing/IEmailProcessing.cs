@@ -3,6 +3,6 @@
     public interface IEmailProcessing
     {
         Task SendConfirmationEmail(string email);
-        Task SendRecoveryEmail(string email);
+        Task SendRecoveryEmail(string email, string token);
     }
 }

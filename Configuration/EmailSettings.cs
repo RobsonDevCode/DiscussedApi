@@ -24,6 +24,6 @@
 
         public string ConfirmationSubject = "Account Confirmation";
 
-        public string RecoverySubject = "Recover Account";
+        public string RecoverySubject = "Change Password";
     }
 }

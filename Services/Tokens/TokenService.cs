@@ -8,8 +8,8 @@ using System.Security.Cryptography;
 using DiscussedApi.Models.Auth;
 using DiscussedApi.Reopisitory.Auth;
 using Microsoft.AspNetCore.Identity;
-using Newtonsoft.Json.Linq;
 using DiscussedApi.Authenctication;
+using NLog;
 namespace DiscussedApi.Services.Tokens
 {
     public class TokenService : ITokenService
@@ -17,6 +17,7 @@ namespace DiscussedApi.Services.Tokens
         private readonly SymmetricSecurityKey _key;
         private readonly IAuthDataAccess _authDataAccess;
         private readonly UserManager<User> _userManager;
+        private readonly NLog.ILogger _logger = LogManager.GetCurrentClassLogger();
         public TokenService(IAuthDataAccess authDataAccess, UserManager<User> userManager)
         {
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Settings.JwtSettings.Key));
@@ -24,13 +25,13 @@ namespace DiscussedApi.Services.Tokens
             _userManager = userManager;
         }
 
-        public async Task<(string Jwt, RefreshToken RefreshToken)> GenerateAndSetJwtAndRefreshToken(User user, HttpResponse response)
+        public async Task GenerateAndSetJwtAndRefreshToken(User user, HttpResponse response)
         {
             if (user == null)
-                throw new BuildTokenException($"Error when building JWT user is null");
+                throw new BuildTokenException("Error when building JWT user is null");
 
             if (string.IsNullOrWhiteSpace(user.UserName))
-                throw new BuildTokenException($"Error when building JWT username is null");
+                throw new BuildTokenException("Error when building JWT username is null");
 
 
             var jwt = GeneratedToken(user);
@@ -38,16 +39,75 @@ namespace DiscussedApi.Services.Tokens
 
             var refreshToken = generateRefreshToken(user.UserName);
 
-            if(string.IsNullOrWhiteSpace(refreshToken.Token))
+            if (string.IsNullOrWhiteSpace(refreshToken.Token))
                 throw new BuildTokenException($"Error when building Refresh Token when presented user {user.UserName}");
 
             setRefreshTokenInCookie(response, refreshToken, user.UserName);
 
             await _authDataAccess.StoreRefreshTokenAsync(refreshToken);
+        }
+        public async Task<string?> GenerateAndStorePasswordResetTokenAsync(User user, HttpResponse response)
+        {
+            if(user == null)
+                throw new BuildTokenException("Error building Password Reset Token user is null");
 
-            return (jwt, refreshToken);
+            if (string.IsNullOrWhiteSpace(user.UserName))
+                throw new BuildTokenException("Error building Password Reset Token username is null");
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            
+            setPasswordResetToken(response, token, user.UserName);
+
+            await _authDataAccess.StorePassordResetToken(user.Email, token);
+
+            return ConvertToUrlSafeToken(token);
         }
 
+        public string ConvertToUrlSafeToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                throw new BuildTokenException("Error building url safe token, token is null");
+
+            return token
+                    .Replace("+", "-")
+                    .Replace("/", "_")
+                    .TrimEnd('=');
+        } 
+
+        public string DecodeUrlSafeToken(string urlSafeToken)
+        {
+            string token = urlSafeToken
+             .Replace("-", "+")
+             .Replace("_", "/");
+
+            // Add padding if necessary
+            int padding = 4 - (token.Length % 4);
+            if (padding < 4)
+            {
+                token += new string('=', padding);
+            }
+
+            return token;
+        }
+        public async Task<bool> IsValidPasswordResetToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                throw new Exception("token can't be null");
+
+            var storedToken = await _authDataAccess.GetPasswordTokenAsync(token);
+
+            if (storedToken == null)
+            {
+                _logger.Warn("pasword token returned null");
+                return false;
+            }
+
+            if(storedToken.ExpiresOnUtc < DateTime.UtcNow)
+                return false;
+
+            return true;
+        }
+      
         public string GeneratedToken(User user)
         {
             if (string.IsNullOrEmpty(user.UserName) || string.IsNullOrEmpty(user.Email))
@@ -82,7 +142,7 @@ namespace DiscussedApi.Services.Tokens
 
         public async Task<(string? Jwt, string? NewRefreshToken)> ProcessRefreshToken(string tokenSent, HttpResponse response)
         {
-            var token = await _authDataAccess.GetTokenByIdAsync(tokenSent);
+            var token = await _authDataAccess.GetRefreshTokenByIdAsync(tokenSent);
 
             if (token == null || token.ExpiresOnUtc < DateTime.UtcNow)
                 return (null, null);
@@ -102,13 +162,14 @@ namespace DiscussedApi.Services.Tokens
 
             return (jwt, refreshToken.Token);
         }
+
         public async Task CleanUpTokens(string username, string refreshToken, HttpResponse response)
         {
             deleteTokensFromCookies(username, response);
             await _authDataAccess.DeleteTokenByIdAsync(refreshToken);
         }
 
-        public void deleteTokensFromCookies(string username, HttpResponse response)
+        private void deleteTokensFromCookies(string username, HttpResponse response)
         {
             response.Cookies.Delete($"access_token_{username}", new CookieOptions()
             {
@@ -125,7 +186,7 @@ namespace DiscussedApi.Services.Tokens
             });
         }
 
-        public RefreshToken generateRefreshToken(string userName)
+        private RefreshToken generateRefreshToken(string userName)
         {
             var randomBytes = new byte[32];
             using (var rng = RandomNumberGenerator.Create())
@@ -142,7 +203,7 @@ namespace DiscussedApi.Services.Tokens
             };
         }
 
-        public void setJWTInCookies(HttpResponse response, string jwt, string username)
+        private void setJWTInCookies(HttpResponse response, string jwt, string username)
         {
             response.Cookies.Append($"access_token_{username}", jwt, new CookieOptions()
             {
@@ -152,7 +213,7 @@ namespace DiscussedApi.Services.Tokens
                 Expires = DateTime.UtcNow.AddMinutes(Settings.JwtSettings.JwtExpiresFrom)
             });
         }
-        public void setRefreshTokenInCookie(HttpResponse response, RefreshToken refreshToken, string username)
+        private void setRefreshTokenInCookie(HttpResponse response, RefreshToken refreshToken, string username)
         {
             response.Cookies.Append($"refresh_token_{username}", refreshToken.Token, new CookieOptions()
             {
@@ -163,6 +224,16 @@ namespace DiscussedApi.Services.Tokens
             });
         }
 
+        private void setPasswordResetToken(HttpResponse response, string token, string username)
+        {
+            response.Cookies.Append($"reset_password_token_{username}", token, new CookieOptions()
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict, 
+                Expires = DateTime.UtcNow.AddMinutes(Settings.Encryption.PasswordResetExpireTime)
+            });
+        }
 
 
     }

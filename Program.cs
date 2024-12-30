@@ -64,7 +64,9 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
                                              Settings.IdentitySettings.AllowedChars.Japanese +
                                              Settings.IdentitySettings.AllowedChars.LatinExtended;
 
-}).AddEntityFrameworkStores<ApplicationIdentityDBContext>();
+})
+.AddEntityFrameworkStores<ApplicationIdentityDBContext>()
+.AddDefaultTokenProviders();
 
 
 builder.Services.AddAuthentication(options =>
@@ -127,6 +129,7 @@ builder.Services.AddSwaggerGen(g =>
     });
 });
 
+builder.Services.AddProblemDetails();
 
 //Dependcy Injections
 builder.Services.AddTransient<IEmailSender, EmailSender>();
